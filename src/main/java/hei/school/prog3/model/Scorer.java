@@ -8,8 +8,9 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 @EqualsAndHashCode
-public class Coach {
-    private String id;
-    private String name;
-    private String nationality;
+
+public class Scorer {
+    private Player player;
+    private Integer minuteOfGoal;
+    private Boolean ownGoal;
 }

@@ -1,7 +1,14 @@
 package hei.school.prog3.model;
 
-import java.util.List;
+import lombok.*;
 
+import java.util.List;
+@Getter
+@AllArgsConstructor
+@Setter
+@NoArgsConstructor
+@ToString
+@EqualsAndHashCode
 public class Club {
     private String id;
     private String name;
@@ -9,4 +16,5 @@ public class Club {
     private Integer yearCreation;
     private String stadium;
     private List<Player> playerList;
+    private Coach coach;
 }
