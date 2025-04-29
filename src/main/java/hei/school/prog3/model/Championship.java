@@ -13,6 +13,7 @@ import java.util.List;
 @ToString
 @EqualsAndHashCode
 public class Championship {
+    private String id;
     private List<Club> clubs;
     private ChampionshipName championshipName;
     private Country country;
