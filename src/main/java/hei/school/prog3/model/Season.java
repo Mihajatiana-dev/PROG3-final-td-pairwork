@@ -1,4 +1,4 @@
 package hei.school.prog3.model;
 
-public class Test {
+public class Season {
 }
