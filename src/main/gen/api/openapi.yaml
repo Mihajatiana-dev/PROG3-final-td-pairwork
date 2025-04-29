@@ -1,0 +1,816 @@
+openapi: 3.1.0
+info:
+  description: Football
+  title: Football championship API
+  version: 1.0.0
+servers:
+- url: http://localhost:8080
+paths:
+  /players:
+    get:
+      operationId: getPlayers
+      parameters:
+      - explode: true
+        in: query
+        name: name
+        required: false
+        schema:
+          description: |
+            Filter the return list by name containing ignore case
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: ageMinimum
+        required: false
+        schema:
+          description: |
+            Filter the return list by age greater than provided value
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: ageMaximum
+        required: false
+        schema:
+          description: |
+            Filter the return list by age less than provided value
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: clubName
+        required: false
+        schema:
+          description: |
+            Filter the return list by club name containing ignore case
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ClubPlayer'
+                type: array
+          description: List of players with their clubs
+      summary: Get list of players in the championship
+      tags:
+      - Player
+      x-accepts:
+      - application/json
+    put:
+      operationId: createOrUpdatePlayers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/Player'
+              type: array
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Player'
+                type: array
+          description: List of created or updated players
+      summary: Create or update players without attaching them into club
+      tags:
+      - Player
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /seasons:
+    get:
+      operationId: getSeasons
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Season'
+          description: List of seasons
+      summary: Get list of existing seasons
+      tags:
+      - Season
+      x-accepts:
+      - application/json
+    post:
+      description: |
+        Required request body without ID or status, default computed status is NOT_STARTED.
+      operationId: createSeasons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/CreateSeason'
+              type: array
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Season'
+                type: array
+          description: List of all seasons including new seasons created
+      summary: Create list of new seasons
+      tags:
+      - Season
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /seasons/{seasonYear}/status:
+    put:
+      description: |
+        Following order can be accepted : NOT_STARTED > STARTED > FINISHED.
+        In case you change status update order, a 400 BAD_REQUEST response must be return.
+      operationId: updateSeasonStatus
+      parameters:
+      - $ref: '#/components/parameters/SeasonYearParameter'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSeasonStatus'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Season'
+          description: Season with updated status
+      summary: Update a specific season status
+      tags:
+      - Season
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /players/{id}/statistics/{seasonYear}:
+    get:
+      description: |
+        Important ! Note that own goals are not considered as goal inside goals scored.
+      operationId: getStatisticsOfPlayerById
+      parameters:
+      - $ref: '#/components/parameters/IdentifierParameter'
+      - $ref: '#/components/parameters/SeasonYearParameter'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerStatistics'
+          description: Player statistics
+        "404":
+          $ref: '#/components/responses/NotFoundResponse'
+      summary: Get statistics for a specific player
+      tags:
+      - Player
+      x-accepts:
+      - application/json
+  /clubs:
+    get:
+      operationId: getClubs
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Club'
+                type: array
+          description: List of the clubs
+      summary: Get clubs of the championship
+      tags:
+      - Club
+      x-accepts:
+      - application/json
+    put:
+      operationId: createOrUpdateClubs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/Club'
+              type: array
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Club'
+                type: array
+          description: List of created or updated clubs
+      summary: Create new clubs or update if already exist
+      tags:
+      - Club
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /clubs/{id}/players:
+    get:
+      parameters:
+      - $ref: '#/components/parameters/IdentifierParameter'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Player'
+                type: array
+          description: List of players of the club
+        "404":
+          $ref: '#/components/responses/NotFoundResponse'
+      summary: Get actual players of the specific club
+      tags:
+      - Club
+      x-accepts:
+      - application/json
+    post:
+      description: "Provided players inside the requestBody create the players if\
+        \ do not exist, \nor attached them to the club, if the players are not attached\
+        \ to a club.\nIn case, one of existing players is still attached to a club,\
+        \ API must return 400 BAD_REQUEST.\nAlso, in case players exist and identified\
+        \ by its ID, player provided values do not update existing player attributes.\n"
+      parameters:
+      - $ref: '#/components/parameters/IdentifierParameter'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/Player'
+              type: array
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Player'
+                type: array
+          description: "List of players of the specific club, including old players\
+            \ and new ones"
+        "400":
+          description: Bad Request when players still attached to another club
+        "404":
+          $ref: '#/components/responses/NotFoundResponse'
+      summary: Add new players or existing players to the specific club
+      tags:
+      - Club
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+    put:
+      description: "Provided players inside the requestBody erase the existing players\
+        \ inside the club.\nIn case player is detached from club, it is still possible\
+        \ to retrieve his individual statistics \nand collective statistics do not\
+        \ change. \nFor example, the player has 10 goals for the season, even if he\
+        \ is not part of the club anymore, \nthe club statistics do not change (goals\
+        \ scored).\nFinally, he must not be inside the list of players can make actions\
+        \ anymore for the remaining matches, if the season is not yet finished.  \
+        \      \nIn case, one of existing players is still attached to a club, API\
+        \ must return 400 BAD_REQUEST.\n"
+      parameters:
+      - $ref: '#/components/parameters/IdentifierParameter'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/Player'
+              type: array
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Player'
+                type: array
+          description: List of actual players of the specific club
+        "400":
+          description: Bad Request when players still attached to another club
+        "404":
+          $ref: '#/components/responses/NotFoundResponse'
+      summary: Change players of the specific club
+      tags:
+      - Club
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /matchMaker/{seasonYear}:
+    post:
+      description: |
+        Only season with status STARTED can compute matches, in case season status is either NOT_STARTED or FINISHED,
+        must return 400 BAD_REQUEST.
+        In case provided season matches already generated, then must return 400 BAD_REQUEST response.
+        Otherwise, create two matches for each club against other, one 'HOME' match and one 'AWAY' match.
+        Look at the instructions inside the context to have more explanation and examples.
+        Also, in case the provided `seasonYear` does not exist, returns 404 NOT_FOUND response.
+      parameters:
+      - $ref: '#/components/parameters/SeasonYearParameter'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Match'
+                type: array
+          description: List of created matches for the season
+      summary: Create all matches for a specific season including all clubs
+      tags:
+      - Match
+      x-accepts:
+      - application/json
+  /matches/{seasonYear}:
+    get:
+      parameters:
+      - $ref: '#/components/parameters/SeasonYearParameter'
+      - description: "Return list filtered by provided matchStatus value. \nFor example,\
+          \ if provided matchStatus = FINISHED, then only FINISHED matches will be\
+          \ returned.\n"
+        explode: true
+        in: query
+        name: matchStatus
+        required: false
+        schema:
+          $ref: '#/components/schemas/MatchStatus'
+        style: form
+      - description: "Return list filtered by provided clubPlayingName value containing.\n\
+          For example, if provided clubPlayingName = 'Real', then return all matches\
+          \ that contains 'Real' as clubs playing name, \nboth if the clubs play HOME\
+          \ or AWAY.\n"
+        explode: true
+        in: query
+        name: clubPlayingName
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Return matches after the provided date only.\nIn case both `matchAfter`\
+          \ and `matchBeforeOrEquals` parameters are provided, \nReturn list of matches\
+          \ between date intervals.\n"
+        explode: true
+        in: query
+        name: matchAfter
+        required: false
+        schema:
+          format: date
+          type: string
+        style: form
+      - description: "Return matches before or equals the provided date only.\nIn\
+          \ case both `matchAfter` and `matchBeforeOrEquals` parameters are provided,\
+          \ \nReturn list of matches between date intervals.\n"
+        explode: true
+        in: query
+        name: matchBeforeOrEquals
+        required: false
+        schema:
+          format: date
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Match'
+                type: array
+          description: List of matches of the specific season
+        "404":
+          $ref: '#/components/responses/NotFoundResponse'
+      summary: Get all matches for a specific season
+      tags:
+      - Match
+      x-accepts:
+      - application/json
+  /matches/{id}/status:
+    put:
+      description: "Following order is to be accepted : NOT_STARTED > STARTED > FINISHED.\n\
+        In case you change status order, a 400 BAD_REQUEST response must be return.\n\
+        When match is set to status FINISHED, club rankings and statistics must be\
+        \ updated, \nthat means after a match is finished, response return by GET\
+        \ /clubs/statistics/{seasonYear} should be updated.\nFor reminder, this is\
+        \ the rules about points obtained after each match according to its result\
+        \ : \n1. In case of victory, the winner obtains 3 points.\n2. In cas of draw,\
+        \ each club of the match obtains 1 point.\n3. In case of defeat, the loser\
+        \ obtains 0 point.\n"
+      parameters:
+      - $ref: '#/components/parameters/IdentifierParameter'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMatchStatus'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Match'
+          description: Match with updated status
+      summary: Change a specific match status
+      tags:
+      - Match
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /matches/{id}/goals:
+    post:
+      description: |
+        Only match with status STARTED can be added goals.
+        If NOT_STARTED or FINISHED status, must return 400 BAD_REQUEST.
+        After each request, the scorer player statistics must be updated,
+        that means, after a goal is scored, response return by GET /players/{id}/statistics/{seasonYear} should be updated.
+      parameters:
+      - $ref: '#/components/parameters/IdentifierParameter'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/AddGoal'
+              type: array
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Match'
+          description: Match with updated goals
+      summary: Add goals by player to a specific match
+      tags:
+      - Match
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /clubs/statistics/{seasonYear}:
+    get:
+      parameters:
+      - $ref: '#/components/parameters/SeasonYearParameter'
+      - description: |
+          Default value is false, and if so, return list of statistics ordered by club name ASC.
+          If provided value is true, return list of statistics ordered by rankings.
+          Ranking is computed respectively according to the following orders of factors:
+          1. Ranking points : club with most ranking points goes on top
+          2. Difference goals : if some clubs have same ranking points, club with most difference goals goes on top
+          3. Clean sheets number : if some clubs have same both ranking points and difference goals, club with most clean sheets goes on top
+        explode: true
+        in: query
+        name: hasToBeClassified
+        required: false
+        schema:
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ClubStatistics'
+                type: array
+          description: All club statistics for the specific season
+      summary: Get all clubs statistics for a specific season year
+      tags:
+      - Club
+      x-accepts:
+      - application/json
+components:
+  parameters:
+    IdentifierParameter:
+      explode: false
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+      style: simple
+    SeasonYearParameter:
+      explode: false
+      in: path
+      name: seasonYear
+      required: true
+      schema:
+        format: date
+        type: string
+      style: simple
+  responses:
+    NotFoundResponse:
+      description: Resource not found
+  schemas:
+    Club:
+      allOf:
+      - $ref: '#/components/schemas/ClubMinimumInfo'
+      example:
+        yearCreation: 0
+        stadium: stadium
+        coach:
+          nationality: nationality
+          name: name
+      properties:
+        yearCreation: {}
+        stadium: {}
+        coach:
+          $ref: '#/components/schemas/Coach'
+    Coach:
+      example:
+        nationality: nationality
+        name: name
+      properties:
+        name:
+          type: string
+        nationality:
+          type: string
+    PlayerPosition:
+      enum:
+      - STRIKER
+      - MIDFIELDER
+      - DEFENSE
+      - GOAL_KEEPER
+      type: string
+    Player:
+      allOf:
+      - $ref: '#/components/schemas/PlayerMinimumInfo'
+      example:
+        nationality: nationality
+        position: STRIKER
+        age: 0
+      properties:
+        position:
+          $ref: '#/components/schemas/PlayerPosition'
+        nationality: {}
+        age: {}
+    PlayerMinimumInfo:
+      example:
+        number: 6
+        name: name
+        id: id
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        number:
+          type: integer
+    ClubPlayer:
+      allOf:
+      - $ref: '#/components/schemas/Player'
+      example:
+        club:
+          yearCreation: 0
+          stadium: stadium
+          coach:
+            nationality: nationality
+            name: name
+      properties:
+        club:
+          $ref: '#/components/schemas/Club'
+    DurationUnit:
+      enum:
+      - SECOND
+      - MINUTE
+      - HOUR
+      type: string
+    PlayingTime:
+      example:
+        durationUnit: SECOND
+        value: 6.027456183070403
+      properties:
+        value:
+          type: number
+        durationUnit:
+          $ref: '#/components/schemas/DurationUnit'
+    CreateSeason:
+      example:
+        year: 0
+        alias: alias
+      properties:
+        year:
+          description: "For example, 2024 or 2025"
+          type: integer
+        alias:
+          description: |
+            For example, if season.year = 2024, alias would be "S2024-2025".
+            If season.year = 2025, alias wold be "S2025-2026".
+          type: string
+    Season:
+      allOf:
+      - $ref: '#/components/schemas/CreateSeason'
+      example:
+        id: id
+        status: NOT_STARTED
+      properties:
+        id: {}
+        status:
+          $ref: '#/components/schemas/SeasonStatus'
+    Match:
+      example:
+        matchDatetime: 2000-01-23T04:56:07.000+00:00
+        actualStatus: NOT_STARTED
+        clubPlayingHome:
+          score: 0
+          acronym: RMA
+          name: name
+          id: id
+          scorers:
+          - ownGoal: true
+            player:
+              number: 6
+              name: name
+              id: id
+            minuteOfGoal: 1
+          - ownGoal: true
+            player:
+              number: 6
+              name: name
+              id: id
+            minuteOfGoal: 1
+        stadium: stadium
+        clubPlayingAway:
+          score: 0
+          acronym: RMA
+          name: name
+          id: id
+          scorers:
+          - ownGoal: true
+            player:
+              number: 6
+              name: name
+              id: id
+            minuteOfGoal: 1
+          - ownGoal: true
+            player:
+              number: 6
+              name: name
+              id: id
+            minuteOfGoal: 1
+        id: id
+      properties:
+        id:
+          type: string
+        clubPlayingHome:
+          $ref: '#/components/schemas/MatchClub'
+        clubPlayingAway:
+          $ref: '#/components/schemas/MatchClub'
+        stadium:
+          type: string
+        matchDatetime:
+          format: date-time
+          type: string
+        actualStatus:
+          $ref: '#/components/schemas/MatchStatus'
+    MatchScore:
+      properties:
+        home:
+          $ref: '#/components/schemas/ClubScore'
+        away:
+          $ref: '#/components/schemas/ClubScore'
+    ClubScore:
+      properties:
+        score:
+          description: "For example, if the match actual score is 'Real Madrid 2 -\
+            \ 3 FC Barcelona', \nThat means Real Madrid has scored 2 two goals and\
+            \ plays at home and FC Barcelona has scored 3 goals and plays away,\n\
+            The `home.value` would be 2 and the `away.value' 3.\n"
+          type: integer
+        scorers:
+          items:
+            $ref: '#/components/schemas/Scorer'
+          type: array
+    Scorer:
+      example:
+        ownGoal: true
+        player:
+          number: 6
+          name: name
+          id: id
+        minuteOfGoal: 1
+      properties:
+        player:
+          $ref: '#/components/schemas/PlayerMinimumInfo'
+        minuteOfGoal:
+          description: "Must be between 1 to 90 only, a 400 BAD REQUEST must be given\
+            \ if not."
+          type: integer
+        ownGoal:
+          type: boolean
+    SeasonStatus:
+      enum:
+      - NOT_STARTED
+      - STARTED
+      - FINISHED
+      type: string
+    MatchStatus:
+      enum:
+      - NOT_STARTED
+      - STARTED
+      - FINISHED
+      type: string
+    ClubMinimumInfo:
+      properties:
+        id:
+          description: Club identifier
+          type: string
+        name:
+          type: string
+        acronym:
+          description: Three letters describing the club (not-unique)
+          example: RMA
+          type: string
+    MatchClub:
+      allOf:
+      - $ref: '#/components/schemas/ClubMinimumInfo'
+      - $ref: '#/components/schemas/ClubScore'
+      example:
+        score: 0
+        acronym: RMA
+        name: name
+        id: id
+        scorers:
+        - ownGoal: true
+          player:
+            number: 6
+            name: name
+            id: id
+          minuteOfGoal: 1
+        - ownGoal: true
+          player:
+            number: 6
+            name: name
+            id: id
+          minuteOfGoal: 1
+    UpdateMatchStatus:
+      example:
+        status: NOT_STARTED
+      properties:
+        status:
+          $ref: '#/components/schemas/MatchStatus'
+    UpdateSeasonStatus:
+      example:
+        status: NOT_STARTED
+      properties:
+        status:
+          $ref: '#/components/schemas/SeasonStatus'
+    AddGoal:
+      example:
+        scorerIdentifier: scorerIdentifier
+        clubId: clubId
+        minuteOfGoal: 0
+      properties:
+        clubId:
+          description: |
+            Club identifier that the goal will be given.
+            In case the given clubId is not one of the clubs playing, return 400 BAD REQUEST.
+            For example, RMA club.id = 1, FCB club.id=2 and ATM club.id=3, and it's a match against RMA vs FCB,
+            but the provided `clubId` is 3, so it returns 400 BAD REQUEST.
+          type: string
+        scorerIdentifier:
+          description: "Player identifier that can be a player of the opponent club,\
+            \ not only the club that has the player. \nIn case a player for the opponent\
+            \ club has scored, \nit is called a \"own goal\" and so `ownGoal` attribute\
+            \ to be returned is to true, otherwise false.\n"
+          type: string
+        minuteOfGoal:
+          description: "Must be between 1 to 90 only, a 400 BAD REQUEST must be given\
+            \ if not."
+          type: integer
+    ClubStatistics:
+      allOf:
+      - $ref: '#/components/schemas/Club'
+      example:
+        scoredGoals: 6
+        concededGoals: 1
+        cleanSheetNumber: 5
+        differenceGoals: 5
+        rankingPoints: 0
+      properties:
+        rankingPoints: {}
+        scoredGoals: {}
+        concededGoals: {}
+        differenceGoals:
+          description: "Scored goals minus conceded goals, can be negative."
+        cleanSheetNumber: {}
+    PlayerStatistics:
+      example:
+        scoredGoals: 0
+        playingTime:
+          durationUnit: SECOND
+          value: 6.027456183070403
+      properties:
+        scoredGoals:
+          type: integer
+        playingTime:
+          $ref: '#/components/schemas/PlayingTime'
+
