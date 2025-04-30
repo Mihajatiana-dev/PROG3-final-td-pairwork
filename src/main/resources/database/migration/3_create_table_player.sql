@@ -6,7 +6,5 @@ CREATE TABLE player (
                         number         Int NOT NULL ,
                         position       position_enum NOT NULL ,
                         nationality    Varchar (100) NOT NULL ,
-                        age            Int NOT NULL ,
-                        club_id        UUID NOT NULL REFERENCES club(club_id),
-                        UNIQUE (number, club_id)
+                        age            Int NOT NULL
 )
