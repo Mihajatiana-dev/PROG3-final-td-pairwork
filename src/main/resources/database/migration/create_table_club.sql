@@ -6,5 +6,5 @@ CREATE TABLE club
     acronym         VARCHAR(5)          NOT NULL,
     stadium_id      UUID NOT NULL REFERENCES stadium (stadium_id),
     coach_id        UUID NOT NULL REFERENCES coach (coach_id),
-    championship_id UUID NOT NULL REFERENCES championship (championship_id),
+    championship_id UUID NOT NULL REFERENCES championship (championship_id)
 )

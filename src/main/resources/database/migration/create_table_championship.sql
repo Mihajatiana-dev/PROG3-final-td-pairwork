@@ -1,4 +1,4 @@
-CREATE TYPE championship_enum AS ENUM ('LA_LIGA', 'PREMIER_LEAGUE', 'BUNDESLIGA', 'LIGUE1', 'SERIA');
+CREATE TYPE championship_enum AS ENUM ('LA_LIGA', 'PREMIER_LEAGUE', 'BUNDESLIGA', 'LIGUE_1', 'SERIE_A');
 
 CREATE TABLE championship
 (
