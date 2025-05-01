@@ -11,4 +11,3 @@ CREATE TABLE player
     club_id     UUID REFERENCES club (club_id),
     UNIQUE (number, club_id)
 )
-
