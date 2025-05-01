@@ -1,4 +1,4 @@
-package org.Dish_Managament.modelDAO;
+package hei.school.prog3.dao.operations;
 
 import org.Dish_Managament.database.DataSource;
 import org.Dish_Managament.mapper.StockMapper;
