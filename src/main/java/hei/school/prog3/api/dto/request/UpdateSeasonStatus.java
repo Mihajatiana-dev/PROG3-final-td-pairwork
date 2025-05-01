@@ -1,4 +1,5 @@
-package hei.school.prog3.model;
+package hei.school.prog3.api.dto.request;
+
 
 import hei.school.prog3.model.enums.SeasonStatus;
 import lombok.*;
@@ -9,10 +10,6 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 @EqualsAndHashCode
-
-public class Season {
-    private Integer year;
-    private String alias;
-    private String id;
+public class UpdateSeasonStatus {
     private SeasonStatus status;
 }

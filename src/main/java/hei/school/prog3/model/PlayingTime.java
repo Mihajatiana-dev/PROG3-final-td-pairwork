@@ -10,6 +10,6 @@ import lombok.*;
 @ToString
 @EqualsAndHashCode
 public class PlayingTime {
-    private Integer value;
+    private double value;
     private DurationUnit durationUnit;
 }

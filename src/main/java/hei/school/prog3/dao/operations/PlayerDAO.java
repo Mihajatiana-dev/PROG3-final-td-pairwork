@@ -24,7 +24,7 @@ import java.util.UUID;
 @Repository
 @RequiredArgsConstructor
 
-public class PlayerDAO implements GenericOperations<Player>{
+public class PlayerDAO implements GenericOperations<Player> {
 
     private final DbConnection dataSource;
     private final PlayerMapper playerMapper;
@@ -160,14 +160,14 @@ public class PlayerDAO implements GenericOperations<Player>{
 
     private Integer getScoredGoals(UUID playerId, int seasonYear) {
         String sql = """
-            SELECT COUNT(*)
-            FROM goal g
-            JOIN match m ON g.match_id = m.match_id
-            JOIN season s ON m.season_id = s.season_id
-            WHERE g.player_id = ?
-            AND s.year = ?
-            AND g.own_goal = false
-            """;
+                SELECT COUNT(*)
+                FROM goal g
+                JOIN match m ON g.match_id = m.match_id
+                JOIN season s ON m.season_id = s.season_id
+                WHERE g.player_id = ?
+                AND s.year = ?
+                AND g.own_goal = false
+                """;
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -188,20 +188,12 @@ public class PlayerDAO implements GenericOperations<Player>{
 
     private PlayingTime getPlayingTime(UUID playerId, int seasonYear) {
         String sql = """
-            SELECT
-                SUM(
-                    CASE
-                        WHEN pt.duration_unit = 'SECOND' THEN pt.value / 60
-                        WHEN pt.duration_unit = 'HOUR' THEN pt.value * 60
-                        ELSE pt.value
-                    END
-                ) AS total_minutes
-            FROM playing_time pt
-            JOIN match m ON pt.match_id = m.match_id
-            JOIN season s ON m.season_id = s.season_id
-            WHERE pt.player_id = ?
-            AND s.year = ?
-            """;
+                SELECT value, duration_unit
+                FROM playing_time pt
+                JOIN season s ON pt.season_id = s.season_id
+                WHERE pt.player_id = ?
+                AND s.year = ?
+                """;
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -211,15 +203,13 @@ public class PlayerDAO implements GenericOperations<Player>{
 
             try (ResultSet rs = statement.executeQuery()) {
                 PlayingTime playingTime = new PlayingTime();
-                playingTime.setDurationUnit(DurationUnit.MINUTE);
-
                 if (rs.next()) {
-                    double minutes = rs.getDouble(1);
-                    playingTime.setValue((int) minutes); // ou garder en double si besoin
+                    playingTime.setValue(rs.getDouble("value"));
+                    playingTime.setDurationUnit(DurationUnit.valueOf(rs.getString("duration_unit")));
                 } else {
                     playingTime.setValue(0);
+                    playingTime.setDurationUnit(DurationUnit.MINUTE);
                 }
-
                 return playingTime;
             }
         } catch (SQLException e) {
