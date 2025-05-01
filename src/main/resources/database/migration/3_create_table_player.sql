@@ -8,3 +8,4 @@ CREATE TABLE player (
                         nationality    Varchar (100) NOT NULL ,
                         age            Int NOT NULL
 )
+
