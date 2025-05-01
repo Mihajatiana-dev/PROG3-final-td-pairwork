@@ -5,5 +5,5 @@ CREATE TABLE club
     acronym       VARCHAR(5)          NOT NULL,
     year_creation INTEGER             NOT NULL,
     stadium       VARCHAR(200)        NOT NULL,
-    coach_id      UUID                NOT NULL REFERENCES coach (coach_id)
+    coach_id      UUID REFERENCES coach (coach_id)
 );
