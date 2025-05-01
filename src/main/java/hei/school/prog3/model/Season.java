@@ -11,8 +11,8 @@ import lombok.*;
 @EqualsAndHashCode
 
 public class Season {
-    private String id;
     private Integer year;
     private String alias;
+    private String id;
     private SeasonStatus status;
 }
