@@ -17,4 +17,13 @@ public class Club {
     private String stadium;
     private List<Player> playerList;
     private Coach coach;
+
+    public Club(String id, String name, String acronym, Integer yearCreation, String stadium, Coach coach) {
+        this.id = id;
+        this.name = name;
+        this.acronym = acronym;
+        this.yearCreation = yearCreation;
+        this.stadium = stadium;
+        this.coach = coach;
+    }
 }

@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -40,14 +41,38 @@ public class CoachDAO implements GenericOperations<Coach>{
         return coach;
     }
 
-        @Override
+    @Override
     public List<Coach> showAll(int page, int size) {
         return List.of();
     }
 
     @Override
-    public List<Coach> save(List<Coach> coaches) {
-        return List.of();
+    public List<Coach> save(List<Coach> coachToSave) {
+        List<Coach> coachList = new ArrayList<>();
+        String coachQuery = "INSERT INTO coach (coach_id, coach_name, nationality) " +
+                "VALUES (?::uuid, ?, ?) " +
+                "ON CONFLICT (coach_id) DO UPDATE SET coach_name = EXCLUDED.coach_name, nationality = EXCLUDED.nationality";
+
+        try (Connection connection = dbConnection.getConnection()) {
+            connection.setAutoCommit(false);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(coachQuery)) {
+                for (Coach coach : coachToSave) {
+                    preparedStatement.setString(1, coach.getId());
+                    preparedStatement.setString(2, coach.getName());
+                    preparedStatement.setString(3, coach.getNationality());
+                    preparedStatement.addBatch();
+                }
+                preparedStatement.executeBatch();
+                connection.commit();
+                coachList.addAll(coachToSave);
+            } catch (RuntimeException e) {
+                connection.rollback();
+                throw new RuntimeException(e);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return coachList;
     }
 
     @Override

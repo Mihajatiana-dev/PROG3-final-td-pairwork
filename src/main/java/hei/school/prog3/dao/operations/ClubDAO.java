@@ -3,6 +3,7 @@ package hei.school.prog3.dao.operations;
 import hei.school.prog3.config.DbConnection;
 import hei.school.prog3.dao.mapper.ClubMapper;
 import hei.school.prog3.model.Club;
+import hei.school.prog3.model.Coach;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -17,6 +18,7 @@ import java.util.List;
 public class ClubDAO implements GenericOperations<Club>{
     private final DbConnection dbConnection;
     private final ClubMapper clubMapper;
+    private final CoachDAO coachDAO;
 
 
     public Club findClubByPlayerId( String playerId) {
@@ -67,8 +69,49 @@ public class ClubDAO implements GenericOperations<Club>{
 
     }
     @Override
-    public List<Club> save(List<Club> clubs) {
-        return List.of();
+    public List<Club> save(List<Club> clubToSave) {
+        List<Club> clubList = new ArrayList<>();
+
+        String clubQuery = "INSERT INTO club (club_id, club_name, acronym, year_creation, stadium, coach_id) " +
+                "VALUES (?::uuid, ?, ?, ?, ?, ?::uuid) " +
+                "ON CONFLICT (club_id) DO UPDATE SET club_name = EXCLUDED.club_name, acronym = EXCLUDED.acronym, " +
+                "year_creation = EXCLUDED.year_creation, stadium = EXCLUDED.stadium, coach_id = EXCLUDED.coach_id";
+
+        try (Connection connection = dbConnection.getConnection()) {
+            connection.setAutoCommit(false);
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(clubQuery)) {
+                for (Club club : clubToSave) {
+                    Coach coach = club.getCoach();
+                    //create UUID IF NULL
+                    if (coach.getId() == null || coach.getId().isEmpty()) {
+                        coach.setId(java.util.UUID.randomUUID().toString());
+                    }
+
+                    coachDAO.save(List.of(coach));
+
+                    preparedStatement.setString(1, club.getId());
+                    preparedStatement.setString(2, club.getName());
+                    preparedStatement.setString(3, club.getAcronym());
+                    preparedStatement.setInt(4, club.getYearCreation());
+                    preparedStatement.setString(5, club.getStadium());
+                    preparedStatement.setString(6, coach.getId());
+                    preparedStatement.addBatch();
+                }
+
+                preparedStatement.executeBatch();
+                connection.commit();
+                clubList.addAll(clubToSave);
+
+            } catch (RuntimeException e) {
+                connection.rollback();
+                throw new RuntimeException(e);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return clubList;
     }
     @Override
     public Club findById(int modelId) {

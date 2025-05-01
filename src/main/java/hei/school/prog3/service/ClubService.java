@@ -15,4 +15,8 @@ public class ClubService {
     public List<Club> getAllClub(int page, int size){
         return clubDAO.showAll(page,size);
     }
+    public List<Club> saveAllClubs(List<Club> clubs) {
+        return clubDAO.save(clubs);
+    }
+
 }
