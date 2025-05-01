@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 @Repository
 @RequiredArgsConstructor
@@ -40,10 +41,30 @@ public class ClubDAO implements GenericOperations<Club>{
 
         return clubToFind;
     }
-
     @Override
     public List<Club> showAll(int page, int size) {
-        return List.of();
+        List<Club> clubList = new ArrayList<>();
+        String query = "SELECT c.* \n" +
+                "FROM club c  LIMIT ? OFFSET ?";
+
+        try(Connection connection = dbConnection.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+        ) {
+            preparedStatement.setInt(1, size);
+            preparedStatement.setInt(2, size * (page - 1));
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    Club club = clubMapper.apply(resultSet);
+                    clubList.add(club);
+                }
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+            return clubList;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
     }
     @Override
     public List<Club> save(List<Club> clubs) {
