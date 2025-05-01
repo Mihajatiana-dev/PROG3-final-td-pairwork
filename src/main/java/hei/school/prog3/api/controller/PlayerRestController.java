@@ -5,6 +5,7 @@ import hei.school.prog3.api.dto.response.PlayerResponse;
 import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
 import hei.school.prog3.model.FilterCriteria;
 import hei.school.prog3.model.Player;
+import hei.school.prog3.model.PlayerStatistics;
 import hei.school.prog3.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -59,7 +61,11 @@ public class PlayerRestController {
     }
 
     @GetMapping("/players/{id}/statistics/{seasonYear}")
-    public Object getStatistics() {
-        return "not supported yet";
+    public ResponseEntity<PlayerStatistics> getPlayerStatistics(
+            @PathVariable UUID id,
+            @PathVariable int seasonYear) {
+
+        PlayerStatistics stats = playerService.getPlayerStatistics(id, seasonYear);
+        return ResponseEntity.ok(stats);
     }
 }

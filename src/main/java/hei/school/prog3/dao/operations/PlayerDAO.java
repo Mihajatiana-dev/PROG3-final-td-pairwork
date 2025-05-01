@@ -5,6 +5,9 @@ import hei.school.prog3.dao.mapper.PlayerMapper;
 import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
 import hei.school.prog3.model.FilterCriteria;
 import hei.school.prog3.model.Player;
+import hei.school.prog3.model.PlayerStatistics;
+import hei.school.prog3.model.PlayingTime;
+import hei.school.prog3.model.enums.DurationUnit;
 import hei.school.prog3.model.enums.PlayerPosition;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -146,5 +149,81 @@ public class PlayerDAO implements GenericOperations<Player>{
             throw new RuntimeException("Failed to save player", e);
         }
         return savedPlayers;
+    }
+
+    public PlayerStatistics getPlayerStatistics(UUID playerId, int seasonYear) {
+        PlayerStatistics statistics = new PlayerStatistics();
+        statistics.setScoredGoals(getScoredGoals(playerId, seasonYear));
+        statistics.setPlayingTime(getPlayingTime(playerId, seasonYear));
+        return statistics;
+    }
+
+    private Integer getScoredGoals(UUID playerId, int seasonYear) {
+        String sql = """
+            SELECT COUNT(*)
+            FROM goal g
+            JOIN match m ON g.match_id = m.match_id
+            JOIN season s ON m.season_id = s.season_id
+            WHERE g.player_id = ?
+            AND s.year = ?
+            AND g.own_goal = false
+            """;
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setObject(1, playerId, Types.OTHER);
+            statement.setInt(2, seasonYear);
+
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to get scored goals", e);
+        }
+        return 0;
+    }
+
+    private PlayingTime getPlayingTime(UUID playerId, int seasonYear) {
+        String sql = """
+            SELECT
+                SUM(
+                    CASE
+                        WHEN pt.duration_unit = 'SECOND' THEN pt.value / 60
+                        WHEN pt.duration_unit = 'HOUR' THEN pt.value * 60
+                        ELSE pt.value
+                    END
+                ) AS total_minutes
+            FROM playing_time pt
+            JOIN match m ON pt.match_id = m.match_id
+            JOIN season s ON m.season_id = s.season_id
+            WHERE pt.player_id = ?
+            AND s.year = ?
+            """;
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setObject(1, playerId, Types.OTHER);
+            statement.setInt(2, seasonYear);
+
+            try (ResultSet rs = statement.executeQuery()) {
+                PlayingTime playingTime = new PlayingTime();
+                playingTime.setDurationUnit(DurationUnit.MINUTE);
+
+                if (rs.next()) {
+                    double minutes = rs.getDouble(1);
+                    playingTime.setValue((int) minutes); // ou garder en double si besoin
+                } else {
+                    playingTime.setValue(0);
+                }
+
+                return playingTime;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to get playing time", e);
+        }
     }
 }
