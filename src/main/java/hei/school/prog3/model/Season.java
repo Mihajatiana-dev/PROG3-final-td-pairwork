@@ -12,7 +12,7 @@ import lombok.*;
 
 public class Season {
     private String id;
+    private Integer year;
     private String alias;
     private SeasonStatus status;
-    private Integer year;
 }
