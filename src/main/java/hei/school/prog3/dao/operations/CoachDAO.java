@@ -21,10 +21,10 @@ public class CoachDAO implements GenericOperations<Coach>{
 
     public Coach findCoachByClubId(String clubId) {
         Coach coach = new Coach();
-        String query = "SELECT c\n" +
+        String query = "SELECT c.* \n" +
                 "FROM coach c\n" +
                 "JOIN club cl ON c.coach_id = cl.coach_id\n" +
-                "WHERE cl.club_id = ?";
+                "WHERE cl.club_id= ?::uuid";
         try(Connection connection = dbConnection.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(query);
         ){

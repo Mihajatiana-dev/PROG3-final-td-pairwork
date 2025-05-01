@@ -20,10 +20,10 @@ public class ClubDAO implements GenericOperations<Club>{
 
     public Club findClubByPlayerId( String playerId) {
         Club clubToFind = new Club();
-        String query = "SELECT c.*\n" +
-                "FROM club c\n" +
-                "JOIN player p ON c.club_id = p.club_id\n" +
-                "WHERE p.player_id =?";
+        String query = "SELECT c.* \n" +
+                "FROM club c \n" +
+                "JOIN player p ON c.club_id = p.club_id \n" +
+                "WHERE p.player_id =?::uuid ";
 
         try(Connection connection = dbConnection.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(query);

@@ -1,25 +1,19 @@
 package hei.school.prog3.dao.operations;
 
 import hei.school.prog3.config.DbConnection;
-<<<<<<< HEAD
 import hei.school.prog3.dao.mapper.PlayerMapper;
-=======
-import hei.school.prog3.dto.rest.playerRest.PlayerWithoutClub;
->>>>>>> upstream/master
+import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
 import hei.school.prog3.model.FilterCriteria;
 import hei.school.prog3.model.Player;
 import hei.school.prog3.model.enums.PlayerPosition;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-<<<<<<< HEAD
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-=======
 import java.sql.*;
->>>>>>> upstream/master
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -27,10 +21,9 @@ import java.util.UUID;
 @Repository
 @RequiredArgsConstructor
 
-<<<<<<< HEAD
 public class PlayerDAO implements GenericOperations<Player>{
 
-    private final DbConnection dbConnection;
+    private final DbConnection dataSource;
     private final PlayerMapper playerMapper;
 
     public List<Player> getAllFilteredPlayer(List<FilterCriteria> filterCriteriaList, int page, int size) {
@@ -41,7 +34,7 @@ public class PlayerDAO implements GenericOperations<Player>{
 
         String sql = "SELECT p.player_id, p.player_name, p.number, p.position, p.nationality, p.age, " +
                 "c.club_id, c.club_name, c.acronym, c.year_creation, c.stadium, " +
-                "co.coach_name, co.nationality" +
+                "co.coach_name, co.nationality " +
                 "FROM player p " +
                 "LEFT JOIN club c ON p.club_id = c.club_id " +
                 "LEFT JOIN coach co ON c.coach_id = co.coach_id " +
@@ -74,7 +67,7 @@ public class PlayerDAO implements GenericOperations<Player>{
         }
         sql += " LIMIT ? OFFSET ?";
 
-        try (Connection connection = dbConnection.getConnection();
+        try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             int index = 1;
             for (Object value : values) {
@@ -94,10 +87,6 @@ public class PlayerDAO implements GenericOperations<Player>{
         }
         return filteredPlayers;
     }
-=======
-public class PlayerDAO implements GenericOperations<Player> {
-    private final DbConnection dataSource;
->>>>>>> upstream/master
 
     @Override
     public List<Player> showAll(int page, int size) {
@@ -111,10 +100,6 @@ public class PlayerDAO implements GenericOperations<Player> {
 
     @Override
     public Player findById(int modelId) {
-        return null;
-    }
-
-    public List<Player> getFilteredPlayersByNameOrAge(List<FilterCriteria> filterCriteria, int page, int size) {
         return null;
     }
 
