@@ -47,11 +47,12 @@ public class PlayerRestController {
 
         List<Player> players = playerService.getAllFilteredPlayer(filterCriteriaList, page, size);
 
+        //JSON form
         List<PlayerResponse> PlayerResponseWithClubPlayerList = players.stream()
                 .map(playerRestMapper::toRest)
                 .toList();
 
-        return players.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(PlayerResponseWithClubPlayerList);
+        return PlayerResponseWithClubPlayerList.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(PlayerResponseWithClubPlayerList);
     }
 
     @PutMapping("/players")
