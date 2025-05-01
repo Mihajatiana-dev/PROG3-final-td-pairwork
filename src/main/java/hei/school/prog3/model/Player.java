@@ -17,4 +17,5 @@ public class Player {
     private PlayerPosition position;
     private String nationality;
     private Integer age;
+    private Club club;
 }
