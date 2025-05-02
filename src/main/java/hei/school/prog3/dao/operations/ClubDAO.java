@@ -4,6 +4,7 @@ import hei.school.prog3.config.DbConnection;
 import hei.school.prog3.dao.mapper.ClubMapper;
 import hei.school.prog3.model.Club;
 import hei.school.prog3.model.Coach;
+import hei.school.prog3.model.Player;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -19,6 +20,21 @@ public class ClubDAO implements GenericOperations<Club>{
     private final DbConnection dbConnection;
     private final ClubMapper clubMapper;
     private final CoachDAO coachDAO;
+
+    public List<Player> findClubPlayer(String Id, int page, int size){
+        List<Player> playerList = new ArrayList<>();
+        String query = "SELECT * FROM player WHERE club_id=?::uuid ";
+
+        try(Connection connection = dbConnection.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+        ) {
+
+        }
+        catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 
 
     public Club findClubByPlayerId( String playerId) {
@@ -87,7 +103,6 @@ public class ClubDAO implements GenericOperations<Club>{
                     if (coach.getId() == null || coach.getId().isEmpty()) {
                         coach.setId(java.util.UUID.randomUUID().toString());
                     }
-
                     coachDAO.save(List.of(coach));
 
                     preparedStatement.setString(1, club.getId());
