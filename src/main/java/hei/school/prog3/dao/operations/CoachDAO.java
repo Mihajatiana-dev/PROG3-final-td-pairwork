@@ -16,7 +16,7 @@ import java.util.List;
 @Repository
 @RequiredArgsConstructor
 
-public class CoachDAO implements GenericOperations<Coach>{
+public class CoachDAO implements GenericOperations<Coach> {
     private final DbConnection dbConnection;
     private final CoachMapper coachMapper;
 
@@ -26,12 +26,12 @@ public class CoachDAO implements GenericOperations<Coach>{
                 "FROM coach c\n" +
                 "JOIN club cl ON c.coach_id = cl.coach_id\n" +
                 "WHERE cl.club_id= ?::uuid";
-        try(Connection connection = dbConnection.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-        ){
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query);
+        ) {
             preparedStatement.setString(1, clubId);
-            try(ResultSet resultSet = preparedStatement.executeQuery()){
-                if(resultSet.next()) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
                     return coachMapper.apply(resultSet);
                 }
             }
@@ -77,6 +77,27 @@ public class CoachDAO implements GenericOperations<Coach>{
 
     @Override
     public Coach findById(int modelId) {
+        return null;
+    }
+
+    public Coach findByName(String name) {
+        String sql = "select coach_id, coach_name, nationality from coach where coach_name = ?";
+
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement pstm = connection.prepareStatement(sql)) {
+            pstm.setString(1, name);
+            try (ResultSet rs = pstm.executeQuery()) {
+                if (rs.next()) {
+                    Coach coach = new Coach();
+                    coach.setId(rs.getString("coach_id"));
+                    coach.setName(rs.getString("coach_name"));
+                    coach.setNationality(rs.getString("nationality"));
+                    return coach;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to find coach by name", e);
+        }
         return null;
     }
 }
