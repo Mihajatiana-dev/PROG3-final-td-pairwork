@@ -22,7 +22,11 @@ public class ClubService {
         return clubDAO.saveAll(clubToSave);
     }
 
-    public List<PlayerWithoutClub> getClubPlayers(String clubId) {
+    public List<PlayerWithoutClub> getPlayers(String clubId) {
         return clubDAO.getActualClubPlayers(clubId);
+    }
+
+    public List<PlayerWithoutClub> changePlayers(List<PlayerWithoutClub> playersTochange, String clubId) {
+        return clubDAO.changePlayers(clubId, playersTochange);
     }
 }

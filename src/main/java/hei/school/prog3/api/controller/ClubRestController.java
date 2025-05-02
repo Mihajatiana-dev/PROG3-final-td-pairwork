@@ -87,12 +87,12 @@ public class ClubRestController {
 //    }
 
     @GetMapping("/clubs/{id}/players")
-    public ResponseEntity<List<PlayerWithoutClub>> getClubPlayers(@PathVariable String id) {
+    public ResponseEntity<List<PlayerWithoutClub>> getPlayers(@PathVariable String id) {
         try {
             // Validate the UUID
             UUID.fromString(id);
 
-            List<PlayerWithoutClub> players = clubService.getClubPlayers(id);
+            List<PlayerWithoutClub> players = clubService.getPlayers(id);
 
             return ResponseEntity.ok(players != null ? players : Collections.emptyList());
 
@@ -102,6 +102,24 @@ public class ClubRestController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Collections.emptyList());
+        }
+    }
+
+    @PutMapping("/clubs/{id}/players")
+    public ResponseEntity<?> changePlayers(
+            @RequestBody List<PlayerWithoutClub> playersToChange,
+            @PathVariable String id) {
+
+        try {
+            if (playersToChange == null) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            List<PlayerWithoutClub> result = clubService.changePlayers(playersToChange, id);
+            return ResponseEntity.ok(result);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 }

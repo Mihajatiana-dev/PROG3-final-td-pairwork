@@ -233,4 +233,67 @@ public class ClubDAO implements GenericOperations<Club> {
         }
         return players;
     }
+
+    public List<PlayerWithoutClub> changePlayers(String clubId, List<PlayerWithoutClub> newPlayers) {
+        String clearExistingPlayersSql = "UPDATE player SET club_id = NULL WHERE club_id = ?";
+
+        String upsertPlayerSql = """
+        INSERT INTO player (player_id, player_name, number, position, nationality, age, club_id)
+        VALUES (?, ?, ?, ?::position_enum, ?, ?, ?)
+        ON CONFLICT (player_id)
+        DO UPDATE SET
+            player_name = EXCLUDED.player_name,
+            number = EXCLUDED.number,
+            position = EXCLUDED.position,
+            nationality = EXCLUDED.nationality,
+            age = EXCLUDED.age,
+            club_id = EXCLUDED.club_id
+        RETURNING player_id, player_name, number, position, nationality, age
+        """;
+
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement clearStmt = connection.prepareStatement(clearExistingPlayersSql);
+             PreparedStatement upsertStmt = connection.prepareStatement(upsertPlayerSql)) {
+
+            connection.setAutoCommit(false);
+
+            // detach club_id from existing players
+            clearStmt.setObject(1, UUID.fromString(clubId), Types.OTHER);
+            clearStmt.executeUpdate();
+
+            // upsert new players
+            List<PlayerWithoutClub> result = new ArrayList<>();
+
+            for (PlayerWithoutClub player : newPlayers) {
+                upsertStmt.setObject(1, player.getId() != null ?
+                        UUID.fromString(player.getId()) : UUID.randomUUID(), Types.OTHER);
+                upsertStmt.setString(2, player.getName());
+                upsertStmt.setInt(3, player.getNumber());
+                upsertStmt.setString(4, player.getPosition().name());
+                upsertStmt.setString(5, player.getNationality());
+                upsertStmt.setInt(6, player.getAge());
+                upsertStmt.setObject(7, UUID.fromString(clubId), Types.OTHER);
+
+                try (ResultSet rs = upsertStmt.executeQuery()) {
+                    if (rs.next()) {
+                        PlayerWithoutClub savedPlayer = new PlayerWithoutClub();
+                        savedPlayer.setId(rs.getString("player_id"));
+                        savedPlayer.setName(rs.getString("player_name"));
+                        savedPlayer.setNumber(rs.getInt("number"));
+                        savedPlayer.setPosition(PlayerPosition.valueOf(rs.getString("position")));
+                        savedPlayer.setNationality(rs.getString("nationality"));
+                        savedPlayer.setAge(rs.getInt("age"));
+                        result.add(savedPlayer);
+                    }
+                }
+                upsertStmt.clearParameters();
+            }
+
+            connection.commit();
+            return result;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to replace club players", e);
+        }
+    }
 }
