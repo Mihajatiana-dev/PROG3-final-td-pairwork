@@ -52,40 +52,6 @@ public class ClubRestController {
         return clubResponseList.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(clubResponseList);
     }
 
-//    @PutMapping("/clubs")
-//    public ResponseEntity<Object> saveClubs(
-//            @RequestBody List<ClubSimpleRequest> createClubs
-//    ) {
-//        if (createClubs == null || createClubs.isEmpty()) {
-//            return ResponseEntity.badRequest().build();
-//        }
-//
-//        List<Club> clubsToSave = createClubs.stream()
-//                .map(clubSimpleRequest -> {
-//                            Club club = new Club(
-//                                    clubSimpleRequest.getId(),
-//                                    clubSimpleRequest.getName(),
-//                                    clubSimpleRequest.getAcronym(),
-//                                    clubSimpleRequest.getYearCreation(),
-//                                    clubSimpleRequest.getStadium(),
-//                                    new Coach(
-//                                    null,
-//                                        clubSimpleRequest.getCoach().getName(),
-//                                        clubSimpleRequest.getCoach().getNationality()
-//                                    )
-//                            );
-//                            return club;
-//                        })
-//                .toList();
-//
-//        List<Club> savedClubs = clubService.saveAllClubs(clubsToSave);
-//        List<ClubResponse> clubResponses = savedClubs.stream()
-//                .map(clubRestMapper::toRest)
-//                .toList();
-//
-//        return ResponseEntity.ok(clubResponses);
-//    }
-
     @GetMapping("/clubs/{id}/players")
     public ResponseEntity<List<PlayerWithoutClub>> getPlayers(@PathVariable String id) {
         try {

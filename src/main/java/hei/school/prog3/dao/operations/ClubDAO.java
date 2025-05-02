@@ -7,11 +7,8 @@ import hei.school.prog3.config.DbConnection;
 import hei.school.prog3.dao.mapper.ClubMapper;
 import hei.school.prog3.model.Club;
 import hei.school.prog3.model.Coach;
-<<<<<<< HEAD
 import hei.school.prog3.model.Player;
-=======
 import hei.school.prog3.model.enums.PlayerPosition;
->>>>>>> upstream/master
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -39,7 +36,7 @@ public class ClubDAO implements GenericOperations<Club> {
         catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
+        return null;
     }
 
 
