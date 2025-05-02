@@ -2,10 +2,12 @@ package hei.school.prog3.dao.operations;
 
 import hei.school.prog3.api.dto.request.ClubSimpleRequest;
 import hei.school.prog3.api.dto.request.CoachSimpleRequest;
+import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
 import hei.school.prog3.config.DbConnection;
 import hei.school.prog3.dao.mapper.ClubMapper;
 import hei.school.prog3.model.Club;
 import hei.school.prog3.model.Coach;
+import hei.school.prog3.model.enums.PlayerPosition;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -150,7 +152,7 @@ public class ClubDAO implements GenericOperations<Club> {
             for (ClubSimpleRequest request : clubToSave) {
                 // manage the coach first
                 CoachSimpleRequest coachRequest = request.getCoach();
-                // verify if coach exists
+                // verify if the coach exists
                 Coach coach = coachDAO.findByName(coachRequest.getName());
 
                 // if not, we create a new coach
@@ -199,5 +201,36 @@ public class ClubDAO implements GenericOperations<Club> {
             throw new RuntimeException("Failed to save clubs", e);
         }
         return clubList;
+    }
+
+    public List<PlayerWithoutClub> getActualClubPlayers(String clubId) {
+        List<PlayerWithoutClub> players = new ArrayList<>();
+        String sql = """
+                SELECT player_id, player_name, number, position, nationality, age 
+                FROM player 
+                WHERE club_id = ?
+                """;
+
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement pstm = connection.prepareStatement(sql)) {
+
+            pstm.setObject(1, UUID.fromString(clubId), Types.OTHER);
+
+            try (ResultSet rs = pstm.executeQuery()) {
+                while (rs.next()) {
+                    PlayerWithoutClub player = new PlayerWithoutClub();
+                    player.setId(rs.getString("player_id"));
+                    player.setName(rs.getString("player_name"));
+                    player.setNumber(rs.getInt("number"));
+                    player.setPosition(PlayerPosition.valueOf(rs.getString("position")));
+                    player.setNationality(rs.getString("nationality"));
+                    player.setAge(rs.getInt("age"));
+                    players.add(player);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to fetch players for club: " + clubId, e);
+        }
+        return players;
     }
 }

@@ -1,6 +1,7 @@
 package hei.school.prog3.service;
 
 import hei.school.prog3.api.dto.request.ClubSimpleRequest;
+import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
 import hei.school.prog3.dao.operations.ClubDAO;
 import hei.school.prog3.model.Club;
 import lombok.RequiredArgsConstructor;
@@ -19,5 +20,9 @@ public class ClubService {
 
     public List<Club> saveAllClubs(List<ClubSimpleRequest> clubToSave) {
         return clubDAO.saveAll(clubToSave);
+    }
+
+    public List<PlayerWithoutClub> getClubPlayers(String clubId) {
+        return clubDAO.getActualClubPlayers(clubId);
     }
 }
