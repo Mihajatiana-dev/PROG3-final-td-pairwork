@@ -11,7 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor
 
 public class CoachSimpleRequest {
-    private String id;
     private String name;
     private String Nationality;
 }

@@ -13,5 +13,4 @@ public class ClubResponse {
     private Integer yearCreation;
     private String stadium;
     private CoachResponse coach;
-
 }
