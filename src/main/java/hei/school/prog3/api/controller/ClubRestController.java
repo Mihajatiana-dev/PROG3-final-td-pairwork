@@ -4,9 +4,7 @@ import hei.school.prog3.api.RestMapper.ClubRestMapper;
 import hei.school.prog3.api.dto.request.ClubSimpleRequest;
 import hei.school.prog3.api.dto.response.ClubResponse;
 import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
-import hei.school.prog3.dao.operations.ClubDAO;
 import hei.school.prog3.model.Club;
-import hei.school.prog3.model.Coach;
 import hei.school.prog3.service.ClubService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -51,40 +49,6 @@ public class ClubRestController {
                 .toList();
         return clubResponseList.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(clubResponseList);
     }
-
-//    @PutMapping("/clubs")
-//    public ResponseEntity<Object> saveClubs(
-//            @RequestBody List<ClubSimpleRequest> createClubs
-//    ) {
-//        if (createClubs == null || createClubs.isEmpty()) {
-//            return ResponseEntity.badRequest().build();
-//        }
-//
-//        List<Club> clubsToSave = createClubs.stream()
-//                .map(clubSimpleRequest -> {
-//                            Club club = new Club(
-//                                    clubSimpleRequest.getId(),
-//                                    clubSimpleRequest.getName(),
-//                                    clubSimpleRequest.getAcronym(),
-//                                    clubSimpleRequest.getYearCreation(),
-//                                    clubSimpleRequest.getStadium(),
-//                                    new Coach(
-//                                    null,
-//                                        clubSimpleRequest.getCoach().getName(),
-//                                        clubSimpleRequest.getCoach().getNationality()
-//                                    )
-//                            );
-//                            return club;
-//                        })
-//                .toList();
-//
-//        List<Club> savedClubs = clubService.saveAllClubs(clubsToSave);
-//        List<ClubResponse> clubResponses = savedClubs.stream()
-//                .map(clubRestMapper::toRest)
-//                .toList();
-//
-//        return ResponseEntity.ok(clubResponses);
-//    }
 
     @GetMapping("/clubs/{id}/players")
     public ResponseEntity<List<PlayerWithoutClub>> getPlayers(@PathVariable String id) {
