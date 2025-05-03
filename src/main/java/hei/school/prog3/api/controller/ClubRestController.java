@@ -6,6 +6,7 @@ import hei.school.prog3.api.dto.request.ClubSimpleRequest;
 import hei.school.prog3.api.dto.response.ClubResponse;
 import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
 import hei.school.prog3.model.Club;
+import hei.school.prog3.model.Player;
 import hei.school.prog3.service.ClubService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 public class ClubRestController {
     private final ClubService clubService;
     private final ClubRestMapper clubRestMapper;
+    private final PlayerRestMapper playerRestMapper;
 
     @GetMapping("/clubs")
     public ResponseEntity<List<ClubResponse>> getAllClubs(
@@ -60,7 +62,7 @@ public class ClubRestController {
             }
 
             List<PlayerWithoutClub> players = club.getPlayers().stream()
-                    .map(PlayerRestMapper::toPlayerWithoutClub)
+                    .map(playerRestMapper::toPlayerWithoutClub)
                     .collect(Collectors.toList());
 
             return ResponseEntity.ok(players);
@@ -94,7 +96,18 @@ public class ClubRestController {
             @PathVariable String id,
             @RequestBody List<PlayerWithoutClub> players
     ) {
-            List<PlayerWithoutClub> result = clubService.addPlayerIntoCLub(id, players);
+            List<Player> playerEntities = players.stream()
+                .map(playerRestMapper::toModel)
+                .toList();
+
+            //Add players into club
+            List<Player> updatedPlayers = clubService.addPlayerIntoCLub(id, playerEntities);
+
+            //return result for api
+            List<PlayerWithoutClub> result = updatedPlayers.stream()
+                .map(playerRestMapper::toPlayerWithoutClub)
+                .toList();
+
             return ResponseEntity.ok(result);
     }
 
