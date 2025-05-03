@@ -7,6 +7,7 @@ import hei.school.prog3.config.DbConnection;
 import hei.school.prog3.dao.mapper.ClubMapper;
 import hei.school.prog3.model.Club;
 import hei.school.prog3.model.Coach;
+import hei.school.prog3.model.Player;
 import hei.school.prog3.model.enums.PlayerPosition;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -162,35 +163,65 @@ public class ClubDAO implements GenericOperations<Club> {
         return clubList;
     }
 
-    public List<PlayerWithoutClub> getActualClubPlayers(String clubId) {
-        List<PlayerWithoutClub> players = new ArrayList<>();
-        String sql = """
-                SELECT player_id, player_name, number, position, nationality, age 
-                FROM player 
-                WHERE club_id = ?
-                """;
+    public Club getClubWithPlayers(String clubId) {
+        String clubSql = "SELECT club_id, club_name, acronym, year_creation, stadium, coach_id FROM club WHERE club_id = ?";
+        String playersSql = "SELECT player_id, player_name, number, position, nationality, age FROM player WHERE club_id = ?";
+        String coachSql = "SELECT coach_id, coach_name, nationality FROM coach WHERE coach_id = ?";
 
-        try (Connection connection = dbConnection.getConnection();
-             PreparedStatement pstm = connection.prepareStatement(sql)) {
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement clubStmt = conn.prepareStatement(clubSql);
+             PreparedStatement playersStmt = conn.prepareStatement(playersSql);
+             PreparedStatement coachStmt = conn.prepareStatement(coachSql)) {
+            clubStmt.setObject(1, UUID.fromString(clubId));
+            ResultSet clubRs = clubStmt.executeQuery();
 
-            pstm.setObject(1, UUID.fromString(clubId), Types.OTHER);
-
-            try (ResultSet rs = pstm.executeQuery()) {
-                while (rs.next()) {
-                    PlayerWithoutClub player = new PlayerWithoutClub();
-                    player.setId(rs.getString("player_id"));
-                    player.setName(rs.getString("player_name"));
-                    player.setNumber(rs.getInt("number"));
-                    player.setPosition(PlayerPosition.valueOf(rs.getString("position")));
-                    player.setNationality(rs.getString("nationality"));
-                    player.setAge(rs.getInt("age"));
-                    players.add(player);
-                }
+            if (!clubRs.next()) {
+                return null;
             }
+
+            UUID coachId = (UUID) clubRs.getObject("coach_id");
+            coachStmt.setObject(1, coachId);
+            ResultSet coachRs = coachStmt.executeQuery();
+
+            Coach coach = null;
+            if (coachRs.next()) {
+                coach = new Coach(
+                        coachRs.getString("coach_id"),
+                        coachRs.getString("coach_name"),
+                        coachRs.getString("nationality")
+                );
+            }
+
+            Club club = new Club(
+                    clubRs.getString("club_id"),
+                    clubRs.getString("club_name"),
+                    clubRs.getString("acronym"),
+                    clubRs.getInt("year_creation"),
+                    clubRs.getString("stadium"),
+                    coach
+            );
+
+            playersStmt.setObject(1, UUID.fromString(clubId));
+            ResultSet playersRs = playersStmt.executeQuery();
+
+            List<Player> players = new ArrayList<>();
+            while (playersRs.next()) {
+                Player player = new Player(
+                        playersRs.getString("player_id"),
+                        playersRs.getString("player_name"),
+                        playersRs.getInt("number"),
+                        PlayerPosition.valueOf(playersRs.getString("position")),
+                        playersRs.getString("nationality"),
+                        playersRs.getInt("age")
+                );
+                players.add(player);
+            }
+            club.setPlayerList(players);
+            return club;
+
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to fetch players for club: " + clubId, e);
+            throw new RuntimeException("Failed to fetch club with players", e);
         }
-        return players;
     }
 
     public List<PlayerWithoutClub> changePlayers(String clubId, List<PlayerWithoutClub> newPlayers) {

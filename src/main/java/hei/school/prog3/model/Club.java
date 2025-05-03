@@ -2,7 +2,9 @@ package hei.school.prog3.model;
 
 import lombok.*;
 
+import java.util.Collections;
 import java.util.List;
+
 @Getter
 @AllArgsConstructor
 @Setter
@@ -25,5 +27,9 @@ public class Club {
         this.yearCreation = yearCreation;
         this.stadium = stadium;
         this.coach = coach;
+    }
+
+    public List<Player> getPlayers() {
+        return this.playerList != null ? this.playerList : Collections.emptyList();
     }
 }

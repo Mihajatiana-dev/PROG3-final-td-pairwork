@@ -22,8 +22,12 @@ public class ClubService {
         return clubDAO.saveAll(clubToSave);
     }
 
-    public List<PlayerWithoutClub> getPlayers(String clubId) {
-        return clubDAO.getActualClubPlayers(clubId);
+//    public List<PlayerWithoutClub> getPlayers(String clubId) {
+//        return clubDAO.getActualClubPlayers(clubId);
+//    }
+
+    public Club getClubWithPlayers(String clubId) {
+        return clubDAO.getClubWithPlayers(clubId);
     }
 
     public List<PlayerWithoutClub> changePlayers(List<PlayerWithoutClub> playersTochange, String clubId) {
