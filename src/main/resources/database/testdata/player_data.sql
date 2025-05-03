@@ -10,3 +10,6 @@ INSERT INTO player (player_id, player_name, number, position, nationality, age, 
 (uuid_generate_v4(), 'Frenkie de Jong', 21, 'MIDFIELDER', 'Netherlands', 26, (SELECT club_id FROM club WHERE club_name = 'FC Barcelone')),
 (uuid_generate_v4(), 'Robert Lewandowski', 9, 'STRIKER', 'Poland', 35, (SELECT club_id FROM club WHERE club_name = 'FC Barcelone')),
 (uuid_generate_v4(), 'Raphinha', 11, 'STRIKER', 'Brazil', 27, (SELECT club_id FROM club WHERE club_name = 'FC Barcelone'));
+
+
+INSERT INTO player (player_id, player_name, number, position, nationality, age, club_id) VALUES (uuid_generate_v4(), 'test', 11, 'STRIKER', 'Brazil', 27, null);
