@@ -101,7 +101,7 @@ public class PlayerDAO implements GenericOperations<Player> {
     @Override
     public Player findById(String Id) {
         String checkPlayerSql = """
-        SELECT player_id 
+        SELECT *
         FROM player 
         WHERE player_id = ?""";
 
