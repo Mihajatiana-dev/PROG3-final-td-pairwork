@@ -1,6 +1,7 @@
 package hei.school.prog3.service;
 
 import hei.school.prog3.api.RestMapper.ClubRestMapper;
+import hei.school.prog3.api.RestMapper.PlayerRestMapper;
 import hei.school.prog3.api.dto.request.ClubSimpleRequest;
 import hei.school.prog3.api.dto.response.ClubResponse;
 import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
@@ -36,8 +37,12 @@ public class ClubService {
                 .toList();
     }
 
-    public List<PlayerWithoutClub> getPlayers(String clubId) {
-        return clubDAO.getActualClubPlayers(clubId);
+//    public List<PlayerWithoutClub> getPlayers(String clubId) {
+//        return clubDAO.getActualClubPlayers(clubId);
+//    }
+
+    public Club getClubWithPlayers(String clubId) {
+        return clubDAO.getClubWithPlayers(clubId);
     }
 
     public List<PlayerWithoutClub> changePlayers(List<PlayerWithoutClub> playersToChange, String clubId) {
@@ -80,7 +85,10 @@ public class ClubService {
                 }
             }
         }
-        return clubDAO.getActualClubPlayers(Id);
+        return club.getPlayerList()
+                .stream()
+                .map(PlayerRestMapper::toPlayerWithoutClub)
+                .toList();
     }
 }
 

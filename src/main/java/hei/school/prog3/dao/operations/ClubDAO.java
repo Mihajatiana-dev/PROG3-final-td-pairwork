@@ -91,30 +91,15 @@ public class ClubDAO implements GenericOperations<Club> {
     }
 
     @Override
-    public List<Club> save(List<Club> clubToSave) {
-        return List.of();
+    public List<Club> save(List<Club> clubs) {
+        return null;
     }
 
     @Override
-    public Club findById(String Id) {
-        String query = """
-        SELECT club_id, club_name, acronym, year_creation, stadium, coach_id
-        FROM club
-        WHERE club_id = ?::uuid
-        """;
-        try (Connection connection = dbConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setObject(1, UUID.fromString(Id), Types.OTHER);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return clubMapper.apply(resultSet);
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to find club by ID: " + Id, e);
-        }
+    public Club findById(String modelId) {
         return null;
     }
+
 
     public List<Club> saveAll(List<ClubSimpleRequest> clubToSave) {
         List<Club> clubList = new ArrayList<>();
@@ -195,53 +180,83 @@ public class ClubDAO implements GenericOperations<Club> {
         return clubList;
     }
 
-    public List<PlayerWithoutClub> getActualClubPlayers(String clubId) {
-        List<PlayerWithoutClub> players = new ArrayList<>();
-        String sql = """
-                SELECT player_id, player_name, number, position, nationality, age 
-                FROM player 
-                WHERE club_id = ?
-                """;
+    public Club getClubWithPlayers(String clubId) {
+        String clubSql = "SELECT club_id, club_name, acronym, year_creation, stadium, coach_id FROM club WHERE club_id = ?";
+        String playersSql = "SELECT player_id, player_name, number, position, nationality, age FROM player WHERE club_id = ?";
+        String coachSql = "SELECT coach_id, coach_name, nationality FROM coach WHERE coach_id = ?";
 
-        try (Connection connection = dbConnection.getConnection();
-             PreparedStatement pstm = connection.prepareStatement(sql)) {
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement clubStmt = conn.prepareStatement(clubSql);
+             PreparedStatement playersStmt = conn.prepareStatement(playersSql);
+             PreparedStatement coachStmt = conn.prepareStatement(coachSql)) {
+            clubStmt.setObject(1, UUID.fromString(clubId));
+            ResultSet clubRs = clubStmt.executeQuery();
 
-            pstm.setObject(1, UUID.fromString(clubId), Types.OTHER);
-
-            try (ResultSet rs = pstm.executeQuery()) {
-                while (rs.next()) {
-                    PlayerWithoutClub player = new PlayerWithoutClub();
-                    player.setId(rs.getString("player_id"));
-                    player.setName(rs.getString("player_name"));
-                    player.setNumber(rs.getInt("number"));
-                    player.setPosition(PlayerPosition.valueOf(rs.getString("position")));
-                    player.setNationality(rs.getString("nationality"));
-                    player.setAge(rs.getInt("age"));
-                    players.add(player);
-                }
+            if (!clubRs.next()) {
+                return null;
             }
+
+            UUID coachId = (UUID) clubRs.getObject("coach_id");
+            coachStmt.setObject(1, coachId);
+            ResultSet coachRs = coachStmt.executeQuery();
+
+            Coach coach = null;
+            if (coachRs.next()) {
+                coach = new Coach(
+                        coachRs.getString("coach_id"),
+                        coachRs.getString("coach_name"),
+                        coachRs.getString("nationality")
+                );
+            }
+
+            Club club = new Club(
+                    clubRs.getString("club_id"),
+                    clubRs.getString("club_name"),
+                    clubRs.getString("acronym"),
+                    clubRs.getInt("year_creation"),
+                    clubRs.getString("stadium"),
+                    coach
+            );
+
+            playersStmt.setObject(1, UUID.fromString(clubId));
+            ResultSet playersRs = playersStmt.executeQuery();
+
+            List<Player> players = new ArrayList<>();
+            while (playersRs.next()) {
+                Player player = new Player(
+                        playersRs.getString("player_id"),
+                        playersRs.getString("player_name"),
+                        playersRs.getInt("number"),
+                        PlayerPosition.valueOf(playersRs.getString("position")),
+                        playersRs.getString("nationality"),
+                        playersRs.getInt("age")
+                );
+                players.add(player);
+            }
+            club.setPlayerList(players);
+            return club;
+
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to fetch players for club: " + clubId, e);
+            throw new RuntimeException("Failed to fetch club with players", e);
         }
-        return players;
     }
 
     public List<PlayerWithoutClub> changePlayers(String clubId, List<PlayerWithoutClub> newPlayers) {
         String clearExistingPlayersSql = "UPDATE player SET club_id = NULL WHERE club_id = ?";
 
         String upsertPlayerSql = """
-        INSERT INTO player (player_id, player_name, number, position, nationality, age, club_id)
-        VALUES (?, ?, ?, ?::position_enum, ?, ?, ?)
-        ON CONFLICT (player_id)
-        DO UPDATE SET
-            player_name = EXCLUDED.player_name,
-            number = EXCLUDED.number,
-            position = EXCLUDED.position,
-            nationality = EXCLUDED.nationality,
-            age = EXCLUDED.age,
-            club_id = EXCLUDED.club_id
-        RETURNING player_id, player_name, number, position, nationality, age
-        """;
+                INSERT INTO player (player_id, player_name, number, position, nationality, age, club_id)
+                VALUES (?, ?, ?, ?::position_enum, ?, ?, ?)
+                ON CONFLICT (player_id)
+                DO UPDATE SET
+                    player_name = EXCLUDED.player_name,
+                    number = EXCLUDED.number,
+                    position = EXCLUDED.position,
+                    nationality = EXCLUDED.nationality,
+                    age = EXCLUDED.age,
+                    club_id = EXCLUDED.club_id
+                RETURNING player_id, player_name, number, position, nationality, age
+                """;
 
         try (Connection connection = dbConnection.getConnection();
              PreparedStatement clearStmt = connection.prepareStatement(clearExistingPlayersSql);
@@ -288,6 +303,4 @@ public class ClubDAO implements GenericOperations<Club> {
             throw new RuntimeException("Failed to replace club players", e);
         }
     }
-
-
 }

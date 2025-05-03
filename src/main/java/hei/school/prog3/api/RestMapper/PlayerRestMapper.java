@@ -4,6 +4,7 @@ import hei.school.prog3.api.dto.response.ClubResponse;
 import hei.school.prog3.api.dto.response.ClubWithoutPlayerListResponse;
 import hei.school.prog3.api.dto.response.PlayerResponse;
 import hei.school.prog3.model.Club;
+import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
 import hei.school.prog3.model.Player;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,5 +37,16 @@ public class PlayerRestMapper {
                 player.getAge(),
                 clubResponse
         );
+    }
+
+    public static PlayerWithoutClub toPlayerWithoutClub(Player player) {
+        PlayerWithoutClub dto = new PlayerWithoutClub();
+        dto.setId(player.getId());
+        dto.setName(player.getName());
+        dto.setNumber(player.getNumber());
+        dto.setPosition(player.getPosition());
+        dto.setNationality(player.getNationality());
+        dto.setAge(player.getAge());
+        return dto;
     }
 }

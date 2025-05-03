@@ -18,4 +18,13 @@ public class Player {
     private String nationality;
     private Integer age;
     private Club club;
+
+    public Player(String id, String name, Integer number, PlayerPosition position, String nationality, Integer age) {
+        this.id = id;
+        this.name = name;
+        this.number = number;
+        this.position = position;
+        this.nationality = nationality;
+        this.age = age;
+    }
 }

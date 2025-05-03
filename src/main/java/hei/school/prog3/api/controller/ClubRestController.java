@@ -1,9 +1,11 @@
 package hei.school.prog3.api.controller;
 
 import hei.school.prog3.api.RestMapper.ClubRestMapper;
+import hei.school.prog3.api.RestMapper.PlayerRestMapper;
 import hei.school.prog3.api.dto.request.ClubSimpleRequest;
 import hei.school.prog3.api.dto.response.ClubResponse;
 import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
+import hei.school.prog3.model.Club;
 import hei.school.prog3.service.ClubService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -51,16 +54,20 @@ public class ClubRestController {
             // Validate the UUID
             UUID.fromString(id);
 
-            List<PlayerWithoutClub> players = clubService.getPlayers(id);
+            Club club = clubService.getClubWithPlayers(id);
+            if (club == null) {
+                return ResponseEntity.notFound().build();
+            }
 
-            return ResponseEntity.ok(players != null ? players : Collections.emptyList());
+            List<PlayerWithoutClub> players = club.getPlayers().stream()
+                    .map(PlayerRestMapper::toPlayerWithoutClub)
+                    .collect(Collectors.toList());
 
+            return ResponseEntity.ok(players);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body(Collections.emptyList());
+            return ResponseEntity.badRequest().build();
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Collections.emptyList());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -89,5 +96,10 @@ public class ClubRestController {
     ) {
             List<PlayerWithoutClub> result = clubService.addPlayerIntoCLub(id, players);
             return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/clubs/statistics/{seasonYear}")
+    public ResponseEntity<List<ClubResponse>> getClubStatistics(@PathVariable int seasonYear, @RequestParam(defaultValue = "false") boolean hasToBeClassified) {
+        return null;
     }
 }
