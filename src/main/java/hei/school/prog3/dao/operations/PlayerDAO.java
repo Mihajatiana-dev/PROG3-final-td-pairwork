@@ -119,7 +119,7 @@ public class PlayerDAO implements GenericOperations<Player> {
         return null;
     }
 
-    public List<Player> savePLayerWithoutUpdate(List<Player> players) {
+    public List<Player> savePlayerWithoutUpdate(List<Player> players) {
         List<Player> savedPlayers = new ArrayList<>();
 
         String sql = """

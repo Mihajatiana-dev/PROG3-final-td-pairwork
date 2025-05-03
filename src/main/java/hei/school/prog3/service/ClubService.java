@@ -49,16 +49,21 @@ public class ClubService {
         return clubDAO.changePlayers(clubId, playersToChange);
     }
 
-    public List<PlayerWithoutClub> addPlayerIntoCLub(String Id, List<PlayerWithoutClub> players) {
+    public Club verifyExistingCLub(String Id){
         Club club = clubDAO.findById(Id);
-
         if (club == null || club.getId() == null) {
             throw new ResourceNotFoundException("Club with ID " + Id + " not found.");
         }
+        return club;
+    }
+
+    public List<PlayerWithoutClub> addPlayerIntoCLub(String Id, List<PlayerWithoutClub> players) {
+        //String Id == clubID
+        Club club = verifyExistingCLub(Id);
+
         // Validate
         for (PlayerWithoutClub player : players) {
             Club existingClub = clubDAO.findClubByPlayerId(player.getId());
-            System.out.println(existingClub + " is already attached to another club.");
             if (existingClub != null && existingClub.getId() != null && !existingClub.getId().equals(club.getId())) {
                 throw new PlayerAlreadyAttachedException("Player with ID " + player.getId() + " is already attached to another club.");
             }
@@ -77,16 +82,16 @@ public class ClubService {
                 newPlayer.setAge(player.getAge());
                 newPlayer.setClub(club);
 
-                playerDAO.savePLayerWithoutUpdate(List.of(newPlayer));
+                playerDAO.savePlayerWithoutUpdate(List.of(newPlayer));
             } else {
                 if (existingPlayer.getClub() == null || !existingPlayer.getClub().getId().equals(club.getId())) {
                     existingPlayer.setClub(club);
-                    playerDAO.savePLayerWithoutUpdate(List.of(existingPlayer));
+                    playerDAO.savePlayerWithoutUpdate(List.of(existingPlayer));
                 }
             }
         }
-        return club.getPlayerList()
-                .stream()
+        Club updatedClub = clubDAO.getClubWithPlayers(Id);
+        return updatedClub.getPlayers().stream()
                 .map(PlayerRestMapper::toPlayerWithoutClub)
                 .toList();
     }

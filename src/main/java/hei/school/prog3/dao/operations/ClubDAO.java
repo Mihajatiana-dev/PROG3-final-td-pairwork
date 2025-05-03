@@ -97,7 +97,24 @@ public class ClubDAO implements GenericOperations<Club> {
 
     @Override
     public Club findById(String modelId) {
-        return null;
+        String query = """
+                SELECT club_id, club_name, acronym, year_creation, stadium, coach_id
+                FROM club
+                WHERE club_id = ?::uuid
+                """;
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query);
+        ) {
+            preparedStatement.setString(1, modelId);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return clubMapper.apply(resultSet);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null; // null if not found
     }
 
 
