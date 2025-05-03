@@ -49,7 +49,7 @@ public class CoachDAO implements GenericOperations<Coach> {
     @Override
     public List<Coach> save(List<Coach> coachToSave) {
         List<Coach> coachList = new ArrayList<>();
-        String coachQuery = "INSERT INTO coach (coach_id, coach_name, nationality) " +
+        String coachQuery = "INSERT INTO coach (coach_id, coach_name    , nationality) " +
                 "VALUES (?::uuid, ?, ?) " +
                 "ON CONFLICT (coach_id) DO UPDATE SET coach_name = EXCLUDED.coach_name, nationality = EXCLUDED.nationality";
 
@@ -76,7 +76,7 @@ public class CoachDAO implements GenericOperations<Coach> {
     }
 
     @Override
-    public Coach findById(int modelId) {
+    public Coach findById(String modelId) {
         return null;
     }
 

@@ -3,10 +3,7 @@ package hei.school.prog3.dao.operations;
 import hei.school.prog3.config.DbConnection;
 import hei.school.prog3.dao.mapper.PlayerMapper;
 import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
-import hei.school.prog3.model.FilterCriteria;
-import hei.school.prog3.model.Player;
-import hei.school.prog3.model.PlayerStatistics;
-import hei.school.prog3.model.PlayingTime;
+import hei.school.prog3.model.*;
 import hei.school.prog3.model.enums.DurationUnit;
 import hei.school.prog3.model.enums.PlayerPosition;
 import lombok.RequiredArgsConstructor;
@@ -102,8 +99,71 @@ public class PlayerDAO implements GenericOperations<Player> {
     }
 
     @Override
-    public Player findById(int modelId) {
+    public Player findById(String Id) {
+        String checkPlayerSql = """
+        SELECT player_id 
+        FROM player 
+        WHERE player_id = ?""";
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(checkPlayerSql)) {
+            preparedStatement.setObject(1, UUID.fromString(Id), Types.OTHER);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return playerMapper.apply(resultSet);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         return null;
+    }
+
+    public List<Player> savePLayerWithoutUpdate(List<Player> players) {
+        List<Player> savedPlayers = new ArrayList<>();
+
+        String sql = """
+        INSERT INTO player (player_id, player_name, number, position, nationality, age, club_id)
+        VALUES (?, ?, ?, ?::position_enum, ?, ?, ?::uuid)
+        RETURNING player_id, player_name, number, position, nationality, age, club_id
+        """;
+
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(false);
+            try (PreparedStatement pstm = connection.prepareStatement(sql)) {
+                for (Player player : players) {
+                    pstm.setObject(1, UUID.fromString(player.getId()), Types.OTHER);
+                    pstm.setString(2, player.getName());
+                    pstm.setInt(3, player.getNumber());
+                    pstm.setString(4, player.getPosition().toString());
+                    pstm.setString(5, player.getNationality());
+                    pstm.setInt(6, player.getAge());
+                    pstm.setString(7, player.getClub().getId());
+
+                    try (ResultSet rs = pstm.executeQuery()) {
+                        if (rs.next()) {
+                            Player savedPlayer = new Player();
+                            savedPlayer.setId(rs.getString("player_id"));
+                            savedPlayer.setName(rs.getString("player_name"));
+                            savedPlayer.setNumber(rs.getInt("number"));
+                            savedPlayer.setPosition(PlayerPosition.valueOf(rs.getString("position")));
+                            savedPlayer.setNationality(rs.getString("nationality"));
+                            savedPlayer.setAge(rs.getInt("age"));
+                            savedPlayer.setClub(new Club(rs.getString("club_id")));
+                            savedPlayers.add(savedPlayer);
+                        }
+                    }
+                    pstm.clearParameters();
+                }
+                connection.commit();
+            } catch (RuntimeException e) {
+                connection.rollback();
+                throw new RuntimeException(e);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to save player", e);
+        }
+        return savedPlayers;
     }
 
     public List<PlayerWithoutClub> saveAll(List<PlayerWithoutClub> players) {
@@ -150,6 +210,7 @@ public class PlayerDAO implements GenericOperations<Player> {
         }
         return savedPlayers;
     }
+
 
     public PlayerStatistics getPlayerStatistics(UUID playerId, int seasonYear) {
         PlayerStatistics statistics = new PlayerStatistics();

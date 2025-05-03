@@ -22,6 +22,9 @@ public class ClubMapper implements Function<ResultSet, Club> {
     public Club apply(ResultSet resultSet) {
         Club club = new Club();
         String clubId = resultSet.getString("club_id");
+        if (clubId == null) {
+            throw new IllegalStateException("Club ID cannot be null");
+        }
         Coach coach = coachDAO.findCoachByClubId(clubId);
 
         club.setId(clubId);

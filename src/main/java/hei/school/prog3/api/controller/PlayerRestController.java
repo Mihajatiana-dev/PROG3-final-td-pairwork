@@ -45,14 +45,11 @@ public class PlayerRestController {
             filterCriteriaList.add(new FilterCriteria("clubName", clubName));
         }
 
-        List<Player> players = playerService.getAllFilteredPlayer(filterCriteriaList, page, size);
+        List<PlayerResponse> playersList = playerService.getAllFilteredPlayer(filterCriteriaList, page, size);
 
-        //JSON form
-        List<PlayerResponse> PlayerResponseWithClubPlayerList = players.stream()
-                .map(playerRestMapper::toRest)
-                .toList();
-
-        return PlayerResponseWithClubPlayerList.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(PlayerResponseWithClubPlayerList);
+        return playersList.isEmpty()
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.ok(playersList);
     }
 
     @PutMapping("/players")

@@ -19,7 +19,7 @@ public class MatchDAO implements GenericOperations<Match>{
     }
 
     @Override
-    public Match findById(int modelId) {
+    public Match findById(String modelId) {
         return null;
     }
 }

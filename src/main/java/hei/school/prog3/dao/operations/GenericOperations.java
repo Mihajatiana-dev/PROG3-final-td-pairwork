@@ -5,5 +5,5 @@ import java.util.List;
 public interface GenericOperations <Model> {
     List<Model> showAll(int page, int size);
     List<Model> save(List<Model> models);
-    Model findById(int modelId);
+    Model findById(String modelId);
 }

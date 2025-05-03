@@ -30,7 +30,7 @@ public class SeasonDAO implements GenericOperations<Season> {
     }
 
     @Override
-    public Season findById(int modelId) {
+    public Season findById(String modelId) {
         return null;
     }
 

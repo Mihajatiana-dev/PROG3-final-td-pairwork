@@ -26,4 +26,7 @@ public class Club {
         this.stadium = stadium;
         this.coach = coach;
     }
+    public Club(String id) {
+        this.id = id;
+    }
 }

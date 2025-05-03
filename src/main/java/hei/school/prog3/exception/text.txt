@@ -1,0 +1,38 @@
+public List<PlayerWithoutClub> addPlayerIntoCLub(String Id, List<PlayerWithoutClub> players) {
+        Club club = clubDAO.findById(Id);
+
+        if (club == null || club.getId() == null) {
+            throw new ResourceNotFoundException("Club with ID " + Id + " not found.");
+        }
+
+        players.forEach(player -> {
+            Club existingClub = clubDAO.findClubByPlayerId(player.getId());
+            if ((existingClub != null && existingClub.getId() != null) && (!existingClub.getId().equals(club.getId()))) {
+                throw new PlayerAlreadyAttachedException("Player with ID " + player.getId() + " is already attached to another club.");
+            }
+
+            Player existingPlayer = playerDAO.findById(player.getId());
+            if (existingPlayer == null) {
+                // Convertir PlayerWithoutClub en Player
+                Player newPlayer = new Player();
+                newPlayer.setId(player.getId());
+                newPlayer.setName(player.getName());
+                newPlayer.setNumber(player.getNumber());
+                newPlayer.setPosition(player.getPosition());
+                newPlayer.setNationality(player.getNationality());
+                newPlayer.setAge(player.getAge());
+                newPlayer.setClub(club);
+
+                playerDAO.savePLayerWithoutUpdate(List.of(newPlayer));
+            }
+
+            else {
+                // just verify if the player is already in the club
+                if (existingPlayer.getClub() == null || !existingPlayer.getClub().getId().equals(club.getId())) {
+                    existingPlayer.setClub(club);
+                    playerDAO.savePLayerWithoutUpdate(List.of(existingPlayer));
+                }
+            }
+        });
+        return clubDAO.getActualClubPlayers(Id);
+    }

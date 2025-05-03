@@ -3,6 +3,7 @@ package hei.school.prog3.api.RestMapper;
 import hei.school.prog3.api.dto.response.ClubResponse;
 import hei.school.prog3.api.dto.response.ClubWithoutPlayerListResponse;
 import hei.school.prog3.api.dto.response.PlayerResponse;
+import hei.school.prog3.model.Club;
 import hei.school.prog3.model.Player;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,14 +16,17 @@ public class PlayerRestMapper {
 
     public PlayerResponse toRest(Player player) {
         //create club response without player list
-        ClubWithoutPlayerListResponse clubResponse = new ClubWithoutPlayerListResponse(
-                player.getClub().getId(),
-                player.getClub().getName(),
-                player.getClub().getAcronym(),
-                player.getClub().getYearCreation(),
-                player.getClub().getStadium(),
-                coachRestMapper.apply(player.getClub().getCoach())
-        );
+        ClubWithoutPlayerListResponse clubResponse = null;
+        if (player.getClub() != null) {
+            clubResponse = new ClubWithoutPlayerListResponse(
+                    player.getClub().getId(),
+                    player.getClub().getName(),
+                    player.getClub().getAcronym(),
+                    player.getClub().getYearCreation(),
+                    player.getClub().getStadium(),
+                    coachRestMapper.apply(player.getClub().getCoach())
+            );
+        }
         return new PlayerResponse(
                 player.getId(),
                 player.getName(),

@@ -1,5 +1,7 @@
 package hei.school.prog3.service;
 
+import hei.school.prog3.api.RestMapper.PlayerRestMapper;
+import hei.school.prog3.api.dto.response.PlayerResponse;
 import hei.school.prog3.dao.operations.PlayerDAO;
 import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
 import hei.school.prog3.model.FilterCriteria;
@@ -15,13 +17,17 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PlayerService {
     private final PlayerDAO playerDAO;
+    private final PlayerRestMapper playerRestMapper;
 
     public List<PlayerWithoutClub> saveAllPlayers(List<PlayerWithoutClub> players) {
         return playerDAO.saveAll(players);
     }
-
-    public List<Player> getAllFilteredPlayer(List<FilterCriteria> filterCriteriaList, int page, int size){
-        return playerDAO.getAllFilteredPlayer(filterCriteriaList, page,size);
+    //map into JSON
+    public List<PlayerResponse> getAllFilteredPlayer(List<FilterCriteria> filterCriteriaList, int page, int size){
+        return playerDAO.getAllFilteredPlayer(filterCriteriaList, page,size)
+                .stream()
+                .map(playerRestMapper::toRest)
+                .toList();
     }
 
     public PlayerStatistics getPlayerStatistics(UUID playerId, int seasonYear) {
