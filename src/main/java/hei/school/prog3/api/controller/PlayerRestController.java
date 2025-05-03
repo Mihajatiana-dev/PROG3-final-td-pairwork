@@ -45,7 +45,10 @@ public class PlayerRestController {
             filterCriteriaList.add(new FilterCriteria("clubName", clubName));
         }
 
-        List<PlayerResponse> playersList = playerService.getAllFilteredPlayer(filterCriteriaList, page, size);
+        List<PlayerResponse> playersList = playerService.getAllFilteredPlayer(filterCriteriaList, page, size)
+                .stream()
+                .map(playerRestMapper::toRest)
+                .toList();
 
         return playersList.isEmpty()
                 ? ResponseEntity.noContent().build()

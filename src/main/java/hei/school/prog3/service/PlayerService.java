@@ -19,15 +19,13 @@ public class PlayerService {
     private final PlayerDAO playerDAO;
     private final PlayerRestMapper playerRestMapper;
 
-    public List<PlayerWithoutClub> saveAllPlayers(List<PlayerWithoutClub> players) {
+        public List<PlayerWithoutClub> saveAllPlayers(List<PlayerWithoutClub> players) {
         return playerDAO.saveAll(players);
     }
     //map into JSON
-    public List<PlayerResponse> getAllFilteredPlayer(List<FilterCriteria> filterCriteriaList, int page, int size){
-        return playerDAO.getAllFilteredPlayer(filterCriteriaList, page,size)
-                .stream()
-                .map(playerRestMapper::toRest)
-                .toList();
+    public List<Player> getAllFilteredPlayer(List<FilterCriteria> filterCriteriaList, int page, int size){
+        return playerDAO.getAllFilteredPlayer(filterCriteriaList, page,size);
+
     }
 
     public PlayerStatistics getPlayerStatistics(UUID playerId, int seasonYear) {

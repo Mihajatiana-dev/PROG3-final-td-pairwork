@@ -64,6 +64,7 @@ public class ClubService {
         // Validate
         for (PlayerWithoutClub player : players) {
             Club existingClub = clubDAO.findClubByPlayerId(player.getId());
+
             if (existingClub != null && existingClub.getId() != null && !existingClub.getId().equals(club.getId())) {
                 throw new PlayerAlreadyAttachedException("Player with ID " + player.getId() + " is already attached to another club.");
             }
@@ -82,11 +83,11 @@ public class ClubService {
                 newPlayer.setAge(player.getAge());
                 newPlayer.setClub(club);
 
-                playerDAO.savePlayerWithoutUpdate(List.of(newPlayer));
+                playerDAO.savePLayerWithoutUpdate(List.of(newPlayer));
             } else {
                 if (existingPlayer.getClub() == null || !existingPlayer.getClub().getId().equals(club.getId())) {
                     existingPlayer.setClub(club);
-                    playerDAO.savePlayerWithoutUpdate(List.of(existingPlayer));
+                    playerDAO.savePLayerWithoutUpdate(List.of(existingPlayer));
                 }
             }
         }

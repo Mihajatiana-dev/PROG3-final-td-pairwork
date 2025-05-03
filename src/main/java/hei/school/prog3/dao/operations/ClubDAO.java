@@ -24,21 +24,6 @@ public class ClubDAO implements GenericOperations<Club> {
     private final ClubMapper clubMapper;
     private final CoachDAO coachDAO;
 
-    public List<Player> findClubPlayer(String Id, int page, int size){
-        List<Player> playerList = new ArrayList<>();
-        String query = "SELECT * FROM player WHERE club_id=?::uuid ";
-
-        try(Connection connection = dbConnection.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-        ) {
-
-        }
-        catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return null;
-    }
-
     public Club findClubByPlayerId(String playerId) {
 
         String query = """
