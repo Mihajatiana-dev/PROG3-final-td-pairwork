@@ -12,7 +12,7 @@ public class ClubRestMapper  {
     @Autowired private CoachRestMapper coachRestMapper;
 
     public ClubResponse toRest(Club club) {
-        CoachResponse coachResponse = coachRestMapper.apply(club.getCoach());
+        CoachResponse coachResponse = coachRestMapper.toRest(club.getCoach());
         return new ClubResponse(
                 club.getId(),
                 club.getName(),
@@ -29,6 +29,7 @@ public class ClubRestMapper  {
         club.setAcronym(clubSimpleRequest.getAcronym());
         club.setYearCreation(clubSimpleRequest.getYearCreation());
         club.setStadium(clubSimpleRequest.getStadium());
+        club.setCoach(coachRestMapper.toModel(clubSimpleRequest.getCoach()));
         return club;
     }
 }

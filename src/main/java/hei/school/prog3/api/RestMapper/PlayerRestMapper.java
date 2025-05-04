@@ -25,7 +25,7 @@ public class PlayerRestMapper {
                     player.getClub().getAcronym(),
                     player.getClub().getYearCreation(),
                     player.getClub().getStadium(),
-                    coachRestMapper.apply(player.getClub().getCoach())
+                    coachRestMapper.toRest(player.getClub().getCoach())
             );
         }
         return new PlayerResponse(
@@ -38,7 +38,6 @@ public class PlayerRestMapper {
                 clubResponse
         );
     }
-
     public Player toModel(PlayerWithoutClub playerWithoutClub) {
         Player player = new Player();
         player.setId(playerWithoutClub.getId());

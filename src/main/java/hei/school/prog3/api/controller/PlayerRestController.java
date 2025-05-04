@@ -31,7 +31,6 @@ public class PlayerRestController {
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size
     ) {
-
         List<FilterCriteria> filterCriteriaList = new ArrayList<>();
         if (name != null) {
             filterCriteriaList.add(new FilterCriteria("name", name));
@@ -45,7 +44,6 @@ public class PlayerRestController {
         if (clubName != null) {
             filterCriteriaList.add(new FilterCriteria("clubName", clubName));
         }
-
         List<PlayerResponse> playersList = playerService.getAllFilteredPlayer(filterCriteriaList, page, size)
                 .stream()
                 .map(playerRestMapper::toRest)
@@ -57,7 +55,8 @@ public class PlayerRestController {
     }
 
     @PutMapping("/players")
-    public ResponseEntity<List<PlayerWithoutClub>> createOrUpdatePlayers(@RequestBody List<PlayerWithoutClub> players) {
+    public ResponseEntity<List<PlayerWithoutClub>> createOrUpdatePlayers(
+            @RequestBody List<PlayerWithoutClub> players) {
 
         List<Player> playersToSave = players.stream()
                 .map(playerRestMapper::toModel)
