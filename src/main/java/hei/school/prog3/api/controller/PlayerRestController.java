@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -57,7 +58,12 @@ public class PlayerRestController {
 
     @PutMapping("/players")
     public ResponseEntity<List<PlayerWithoutClub>> createOrUpdatePlayers(@RequestBody List<PlayerWithoutClub> players) {
-        List<PlayerWithoutClub> savedPlayers = playerService.saveAllPlayers(players);
+        List<Player> requestPlayers = playerService.saveAllPlayers(players);
+
+        List<PlayerWithoutClub> savedPlayers = requestPlayers.stream()
+                .map(PlayerRestMapper::toPlayerWithoutClub)
+                .collect(Collectors.toList());
+
         return savedPlayers.isEmpty() ? ResponseEntity.badRequest().build() : ResponseEntity.ok(savedPlayers);
     }
 

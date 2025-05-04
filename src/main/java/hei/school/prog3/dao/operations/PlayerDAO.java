@@ -25,6 +25,7 @@ public class PlayerDAO implements GenericOperations<Player> {
 
     private final DbConnection dataSource;
     private final PlayerMapper playerMapper;
+    private final ClubDAO clubDAO;
 
     public List<Player> getAllFilteredPlayer(List<FilterCriteria> filterCriteriaList, int page, int size) {
         if (page < 1) {
@@ -101,9 +102,9 @@ public class PlayerDAO implements GenericOperations<Player> {
     @Override
     public Player findById(String Id) {
         String checkPlayerSql = """
-        SELECT player_id 
-        FROM player 
-        WHERE player_id = ?""";
+                SELECT player_id 
+                FROM player 
+                WHERE player_id = ?""";
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(checkPlayerSql)) {
@@ -123,10 +124,10 @@ public class PlayerDAO implements GenericOperations<Player> {
         List<Player> savedPlayers = new ArrayList<>();
 
         String sql = """
-        INSERT INTO player (player_id, player_name, number, position, nationality, age, club_id)
-        VALUES (?, ?, ?, ?::position_enum, ?, ?, ?::uuid)
-        RETURNING player_id, player_name, number, position, nationality, age, club_id
-        """;
+                INSERT INTO player (player_id, player_name, number, position, nationality, age, club_id)
+                VALUES (?, ?, ?, ?::position_enum, ?, ?, ?::uuid)
+                RETURNING player_id, player_name, number, position, nationality, age, club_id
+                """;
 
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
@@ -166,8 +167,8 @@ public class PlayerDAO implements GenericOperations<Player> {
         return savedPlayers;
     }
 
-    public List<PlayerWithoutClub> saveAll(List<PlayerWithoutClub> players) {
-        List<PlayerWithoutClub> savedPlayers = new ArrayList<>();
+    public List<Player> saveAll(List<PlayerWithoutClub> players) {
+        List<Player> savedPlayers = new ArrayList<>();
 
         String sql = """
                 INSERT INTO player (player_id, player_name, number, position, nationality, age)
@@ -179,7 +180,7 @@ public class PlayerDAO implements GenericOperations<Player> {
                     position = EXCLUDED.position,
                     nationality = EXCLUDED.nationality,
                     age = EXCLUDED.age
-                RETURNING player_id, player_name, number, position, nationality, age
+                RETURNING player_id, player_name, number, position, nationality, age, club_id
                 """;
 
         try (Connection connection = dataSource.getConnection();
@@ -194,13 +195,17 @@ public class PlayerDAO implements GenericOperations<Player> {
 
                 try (ResultSet rs = pstm.executeQuery()) {
                     if (rs.next()) {
-                        PlayerWithoutClub savedPlayer = new PlayerWithoutClub();
+                        Player savedPlayer = new Player();
                         savedPlayer.setId(rs.getObject("player_id", UUID.class).toString());
                         savedPlayer.setName(rs.getString("player_name"));
                         savedPlayer.setNumber(rs.getInt("number"));
                         savedPlayer.setPosition(PlayerPosition.valueOf(rs.getString("position")));
                         savedPlayer.setNationality(rs.getString("nationality"));
                         savedPlayer.setAge(rs.getInt("age"));
+
+                        Club club = new Club(rs.getString("club_id"));
+                        savedPlayer.setClub(club);
+
                         savedPlayers.add(savedPlayer);
                     }
                 }

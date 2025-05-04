@@ -19,7 +19,7 @@ public class PlayerService {
     private final PlayerDAO playerDAO;
     private final PlayerRestMapper playerRestMapper;
 
-        public List<PlayerWithoutClub> saveAllPlayers(List<PlayerWithoutClub> players) {
+        public List<Player> saveAllPlayers(List<PlayerWithoutClub> players) {
         return playerDAO.saveAll(players);
     }
     //map into JSON
