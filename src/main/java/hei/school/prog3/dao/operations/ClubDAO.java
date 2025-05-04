@@ -244,24 +244,13 @@ public class ClubDAO implements GenericOperations<Club> {
 
     public List<Player> changePlayers(String clubId, List<Player> newPlayers) {
         String clearExistingPlayersSql = "UPDATE player SET club_id = NULL WHERE club_id = ?";
-
-        String upsertPlayerSql = """
-                INSERT INTO player (player_id, player_name, number, position, nationality, age, club_id)
-                VALUES (?, ?, ?, ?::position_enum, ?, ?, ?)
-                ON CONFLICT (player_id)
-                DO UPDATE SET
-                    player_name = EXCLUDED.player_name,
-                    number = EXCLUDED.number,
-                    position = EXCLUDED.position,
-                    nationality = EXCLUDED.nationality,
-                    age = EXCLUDED.age,
-                    club_id = EXCLUDED.club_id
-                RETURNING player_id, player_name, number, position, nationality, age
-                """;
+        String updatePlayerSql = "UPDATE player SET club_id = ? WHERE player_id = ?";
+        String getPlayerSql = "SELECT player_id, player_name, number, position, nationality, age FROM player WHERE player_id = ?";
 
         try (Connection connection = dbConnection.getConnection();
              PreparedStatement clearStmt = connection.prepareStatement(clearExistingPlayersSql);
-             PreparedStatement upsertStmt = connection.prepareStatement(upsertPlayerSql)) {
+             PreparedStatement updateStmt = connection.prepareStatement(updatePlayerSql);
+             PreparedStatement getPlayerStmt = connection.prepareStatement(getPlayerSql)) {
 
             connection.setAutoCommit(false);
 
@@ -269,20 +258,19 @@ public class ClubDAO implements GenericOperations<Club> {
             clearStmt.setObject(1, UUID.fromString(clubId), Types.OTHER);
             clearStmt.executeUpdate();
 
-            // upsert new players
+            // update players with new club_id
             List<Player> result = new ArrayList<>();
 
             for (Player player : newPlayers) {
-                upsertStmt.setObject(1, player.getId() != null ?
-                        UUID.fromString(player.getId()) : UUID.randomUUID(), Types.OTHER);
-                upsertStmt.setString(2, player.getName());
-                upsertStmt.setInt(3, player.getNumber());
-                upsertStmt.setString(4, player.getPosition().name());
-                upsertStmt.setString(5, player.getNationality());
-                upsertStmt.setInt(6, player.getAge());
-                upsertStmt.setObject(7, UUID.fromString(clubId), Types.OTHER);
+                // Update player's club_id
+                updateStmt.setObject(1, UUID.fromString(clubId), Types.OTHER);
+                updateStmt.setObject(2, UUID.fromString(player.getId()), Types.OTHER);
+                updateStmt.executeUpdate();
+                updateStmt.clearParameters();
 
-                try (ResultSet rs = upsertStmt.executeQuery()) {
+                // Get updated player
+                getPlayerStmt.setObject(1, UUID.fromString(player.getId()), Types.OTHER);
+                try (ResultSet rs = getPlayerStmt.executeQuery()) {
                     if (rs.next()) {
                         Player savedPlayer = new Player();
                         savedPlayer.setId(rs.getString("player_id"));
@@ -294,7 +282,7 @@ public class ClubDAO implements GenericOperations<Club> {
                         result.add(savedPlayer);
                     }
                 }
-                upsertStmt.clearParameters();
+                getPlayerStmt.clearParameters();
             }
 
             connection.commit();

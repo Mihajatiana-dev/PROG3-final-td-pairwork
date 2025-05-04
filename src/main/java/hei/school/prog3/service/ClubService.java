@@ -8,6 +8,7 @@ import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
 import hei.school.prog3.dao.operations.ClubDAO;
 import hei.school.prog3.dao.operations.PlayerDAO;
 import hei.school.prog3.exception.PlayerAlreadyAttachedException;
+import hei.school.prog3.exception.PlayerInformationMismatchException;
 import hei.school.prog3.exception.ResourceNotFoundException;
 import hei.school.prog3.model.Club;
 import hei.school.prog3.model.Player;
@@ -46,6 +47,32 @@ public class ClubService {
     }
 
     public List<Player> changePlayers(List<Player> playersToChange, String clubId) {
+        // Verify club exists
+        Club club = verifyExistingCLub(clubId);
+
+        // Check if any player is already attached to another club and verify player information
+        for (Player player : playersToChange) {
+            // Check if player is attached to a club
+            Club existingClub = clubDAO.findClubByPlayerId(player.getId());
+            if (existingClub != null && existingClub.getId() != null) {
+                throw new PlayerAlreadyAttachedException("Player with ID " + player.getId() + " is already attached to a club.");
+            }
+
+            // Verify player information
+            Player existingPlayer = playerDAO.findById(player.getId());
+            if (existingPlayer != null) {
+                // Check if all player information matches
+                if (!existingPlayer.getName().equals(player.getName()) ||
+                    !existingPlayer.getNumber().equals(player.getNumber()) ||
+                    !existingPlayer.getPosition().equals(player.getPosition()) ||
+                    !existingPlayer.getNationality().equals(player.getNationality()) ||
+                    !existingPlayer.getAge().equals(player.getAge())) {
+                    throw new PlayerInformationMismatchException("Player information for ID " + player.getId() + " does not match existing player information.");
+                }
+            }
+        }
+
+        // If all players are not attached to any club and information is correct, proceed with changing players
         return clubDAO.changePlayers(clubId, playersToChange);
     }
 
@@ -88,4 +115,3 @@ public class ClubService {
         return updatedClub.getPlayers();
     }
 }
-
