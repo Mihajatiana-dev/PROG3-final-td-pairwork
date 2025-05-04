@@ -45,7 +45,7 @@ public class ClubService {
         return clubDAO.getClubWithPlayers(clubId);
     }
 
-    public List<PlayerWithoutClub> changePlayers(List<PlayerWithoutClub> playersToChange, String clubId) {
+    public List<Player> changePlayers(List<Player> playersToChange, String clubId) {
         return clubDAO.changePlayers(clubId, playersToChange);
     }
 
