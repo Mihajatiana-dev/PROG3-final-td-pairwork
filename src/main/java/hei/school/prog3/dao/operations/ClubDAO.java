@@ -2,7 +2,6 @@ package hei.school.prog3.dao.operations;
 
 import hei.school.prog3.api.dto.request.ClubSimpleRequest;
 import hei.school.prog3.api.dto.request.CoachSimpleRequest;
-import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
 import hei.school.prog3.config.DbConnection;
 import hei.school.prog3.dao.mapper.ClubMapper;
 import hei.school.prog3.model.Club;
@@ -243,7 +242,7 @@ public class ClubDAO implements GenericOperations<Club> {
         }
     }
 
-    public List<PlayerWithoutClub> changePlayers(String clubId, List<PlayerWithoutClub> newPlayers) {
+    public List<Player> changePlayers(String clubId, List<Player> newPlayers) {
         String clearExistingPlayersSql = "UPDATE player SET club_id = NULL WHERE club_id = ?";
 
         String upsertPlayerSql = """
@@ -271,9 +270,9 @@ public class ClubDAO implements GenericOperations<Club> {
             clearStmt.executeUpdate();
 
             // upsert new players
-            List<PlayerWithoutClub> result = new ArrayList<>();
+            List<Player> result = new ArrayList<>();
 
-            for (PlayerWithoutClub player : newPlayers) {
+            for (Player player : newPlayers) {
                 upsertStmt.setObject(1, player.getId() != null ?
                         UUID.fromString(player.getId()) : UUID.randomUUID(), Types.OTHER);
                 upsertStmt.setString(2, player.getName());
@@ -285,7 +284,7 @@ public class ClubDAO implements GenericOperations<Club> {
 
                 try (ResultSet rs = upsertStmt.executeQuery()) {
                     if (rs.next()) {
-                        PlayerWithoutClub savedPlayer = new PlayerWithoutClub();
+                        Player savedPlayer = new Player();
                         savedPlayer.setId(rs.getString("player_id"));
                         savedPlayer.setName(rs.getString("player_name"));
                         savedPlayer.setNumber(rs.getInt("number"));

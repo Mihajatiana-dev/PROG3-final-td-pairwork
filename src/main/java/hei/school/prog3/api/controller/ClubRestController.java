@@ -82,9 +82,16 @@ public class ClubRestController {
             if (playersToChange == null) {
                 return ResponseEntity.badRequest().build();
             }
-
-            List<PlayerWithoutClub> result = clubService.changePlayers(playersToChange, id);
-            return ResponseEntity.ok(result);
+            //map into model
+            List<Player> playerModel = playersToChange.stream()
+                    .map(playerRestMapper::toModel)
+                    .toList();
+            List<Player> result = clubService.changePlayers(playerModel, id);
+            //map into dto for return
+            List<PlayerWithoutClub> response = result.stream()
+                    .map(playerRestMapper::toPlayerWithoutClub)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(response);
 
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
