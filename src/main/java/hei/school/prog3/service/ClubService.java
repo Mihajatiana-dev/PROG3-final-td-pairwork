@@ -87,11 +87,25 @@ public class ClubService {
             if (existingClub != null && existingClub.getId() != null && !existingClub.getId().equals(club.getId())) {
                 throw new PlayerAlreadyAttachedException("Player with ID " + player.getId() + " is already attached to another club.");
             }
+
+            // Verify player information if player exists
+            Player existingPlayer = playerDAO.findById(player.getId());
+            if (existingPlayer != null) {
+                // Check if all player information matches
+                if (!existingPlayer.getName().equals(player.getName()) ||
+                    !existingPlayer.getNumber().equals(player.getNumber()) ||
+                    !existingPlayer.getPosition().equals(player.getPosition()) ||
+                    !existingPlayer.getNationality().equals(player.getNationality()) ||
+                    !existingPlayer.getAge().equals(player.getAge())) {
+                    throw new PlayerInformationMismatchException("Player information for ID " + player.getId() + " does not match existing player information.");
+                }
+            }
         }
         // Insert
         for (Player player : players) {
             Player existingPlayer = playerDAO.findById(player.getId());
             if (existingPlayer == null) {
+                // Create new player with club
                 Player newPlayer = new Player();
                 newPlayer.setId(player.getId());
                 newPlayer.setName(player.getName());
@@ -102,8 +116,11 @@ public class ClubService {
                 newPlayer.setClub(club);
 
                 playerDAO.savePLayerWithoutUpdate(List.of(newPlayer));
+            } else {
+                // Player exists, just attach to club if not already attached to this club
+                // The attachPlayerToClub method will only update if club_id is NULL or already equals this club's ID
+                playerDAO.attachPlayerToClub(player.getId(), club.getId());
             }
-            playerDAO.attachPlayerToClub(player.getId(), club.getId());
         }
         Club updatedClub = clubDAO.getClubWithPlayers(Id);
         return updatedClub.getPlayers();

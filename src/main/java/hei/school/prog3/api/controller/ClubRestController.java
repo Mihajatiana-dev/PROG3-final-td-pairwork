@@ -5,6 +5,9 @@ import hei.school.prog3.api.RestMapper.PlayerRestMapper;
 import hei.school.prog3.api.dto.request.ClubSimpleRequest;
 import hei.school.prog3.api.dto.response.ClubResponse;
 import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
+import hei.school.prog3.exception.PlayerAlreadyAttachedException;
+import hei.school.prog3.exception.PlayerInformationMismatchException;
+import hei.school.prog3.exception.ResourceNotFoundException;
 import hei.school.prog3.model.Club;
 import hei.school.prog3.model.Player;
 import hei.school.prog3.service.ClubService;
@@ -107,6 +110,17 @@ public class ClubRestController {
 
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
+        } catch (PlayerAlreadyAttachedException e) {
+            // Player already attached to another club
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            // Club not found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (PlayerInformationMismatchException e) {
+            // Player information doesn't match
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -115,19 +129,43 @@ public class ClubRestController {
             @PathVariable String id,
             @RequestBody List<PlayerWithoutClub> players
     ) {
+        try {
+            // Validate the UUID
+            UUID.fromString(id);
+
+            if (players == null || players.isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+
             List<Player> playerEntities = players.stream()
-                .map(playerRestMapper::toModel)
-                .collect(Collectors.toList());
-            //Add players into club
+                    .map(playerRestMapper::toModel)
+                    .collect(Collectors.toList());
+
             List<Player> updatedPlayers = clubService.addPlayerIntoCLub(id, playerEntities);
-            //return result for api
+
             List<PlayerWithoutClub> result = updatedPlayers.stream()
-                .map(playerRestMapper::toPlayerWithoutClub)
-                .collect(Collectors.toList());
+                    .map(playerRestMapper::toPlayerWithoutClub)
+                    .collect(Collectors.toList());
 
             return result.isEmpty()
                     ? ResponseEntity.badRequest().build()
                     : ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            // Invalid UUID format
+            return ResponseEntity.badRequest().build();
+        } catch (PlayerAlreadyAttachedException e) {
+            // Player already attached to another club
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            // Club not found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (PlayerInformationMismatchException e) {
+            // Player information doesn't match
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (RuntimeException e) {
+            // Other unexpected errors
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/clubs/statistics/{seasonYear}")
