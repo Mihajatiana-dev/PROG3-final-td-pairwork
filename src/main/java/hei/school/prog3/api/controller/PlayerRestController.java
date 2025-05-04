@@ -61,7 +61,7 @@ public class PlayerRestController {
         List<Player> requestPlayers = playerService.saveAllPlayers(players);
 
         List<PlayerWithoutClub> savedPlayers = requestPlayers.stream()
-                .map(PlayerRestMapper::toPlayerWithoutClub)
+                .map(playerRestMapper::toPlayerWithoutClub)
                 .collect(Collectors.toList());
 
         return savedPlayers.isEmpty() ? ResponseEntity.badRequest().build() : ResponseEntity.ok(savedPlayers);
