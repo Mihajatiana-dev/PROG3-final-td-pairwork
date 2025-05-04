@@ -99,10 +99,8 @@ public class ClubRestController {
             List<Player> playerEntities = players.stream()
                 .map(playerRestMapper::toModel)
                 .toList();
-
             //Add players into club
             List<Player> updatedPlayers = clubService.addPlayerIntoCLub(id, playerEntities);
-
             //return result for api
             List<PlayerWithoutClub> result = updatedPlayers.stream()
                 .map(playerRestMapper::toPlayerWithoutClub)

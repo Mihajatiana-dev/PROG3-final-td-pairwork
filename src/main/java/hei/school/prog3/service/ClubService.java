@@ -60,16 +60,13 @@ public class ClubService {
     public List<Player> addPlayerIntoCLub(String Id, List<Player> players) {
         //String Id == clubID
         Club club = verifyExistingCLub(Id);
-
         // Validate
         for (Player player : players) {
             Club existingClub = clubDAO.findClubByPlayerId(player.getId());
-
             if (existingClub != null && existingClub.getId() != null && !existingClub.getId().equals(club.getId())) {
                 throw new PlayerAlreadyAttachedException("Player with ID " + player.getId() + " is already attached to another club.");
             }
         }
-
         // Insert
         for (Player player : players) {
             Player existingPlayer = playerDAO.findById(player.getId());
@@ -84,12 +81,8 @@ public class ClubService {
                 newPlayer.setClub(club);
 
                 playerDAO.savePLayerWithoutUpdate(List.of(newPlayer));
-            } else {
-                if (existingPlayer.getClub() == null || !existingPlayer.getClub().getId().equals(club.getId())) {
-                    existingPlayer.setClub(club);
-                    playerDAO.savePLayerWithoutUpdate(List.of(existingPlayer));
-                }
             }
+            playerDAO.attachPlayerToClub(player.getId(), club.getId());
         }
         Club updatedClub = clubDAO.getClubWithPlayers(Id);
         return updatedClub.getPlayers();

@@ -119,6 +119,29 @@ public class PlayerDAO implements GenericOperations<Player> {
         return null;
     }
 
+    public void attachPlayerToClub(String playerId, String clubId) {
+        String sql = """
+        UPDATE player 
+        SET club_id = ?::uuid 
+        WHERE player_id = ?::uuid
+        AND (club_id IS NULL OR club_id = ?::uuid)
+        """;
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstm = connection.prepareStatement(sql)) {
+            pstm.setString(1, clubId);
+            pstm.setString(2, playerId);
+            pstm.setString(3, clubId);
+
+            int affectedRows = pstm.executeUpdate();
+            if (affectedRows == 0) {
+                throw new RuntimeException("Player is already in another club");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to attach player to club", e);
+        }
+    }
+
     public List<Player> savePLayerWithoutUpdate(List<Player> players) {
         List<Player> savedPlayers = new ArrayList<>();
 
