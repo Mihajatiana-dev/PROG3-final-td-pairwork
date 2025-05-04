@@ -30,7 +30,11 @@ public class ClubRestController {
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size
     ) {
-        List<ClubResponse> clubResponseList = clubService.getAllClubResponses(page, size);
+        List<ClubResponse> clubResponseList = clubService.getAllClubResponses(page, size)
+                .stream()
+                .map(clubRestMapper::toRest)
+                .collect(Collectors.toList());
+
         return clubResponseList.isEmpty()
                 ? ResponseEntity.noContent().build()
                 : ResponseEntity.ok(clubResponseList);
@@ -43,8 +47,16 @@ public class ClubRestController {
         if (createClubs == null || createClubs.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
+        List<Club> clubModel = createClubs.stream()
+                .map(clubRestMapper::toModel)
+                .collect(Collectors.toList());
 
-        List<ClubResponse> clubResponseList = clubService.saveAllClubResponses(createClubs);
+        List<Club> requestClub = clubService.saveAllClubResponses(clubModel);
+
+        List<ClubResponse> clubResponseList = requestClub.stream()
+                .map(clubRestMapper::toRest)
+                .collect(Collectors.toList());
+        // Return the response
         return clubResponseList.isEmpty()
                 ? ResponseEntity.noContent().build()
                 : ResponseEntity.ok(clubResponseList);
@@ -85,7 +97,7 @@ public class ClubRestController {
             //map into model
             List<Player> playerModel = playersToChange.stream()
                     .map(playerRestMapper::toModel)
-                    .toList();
+                    .collect(Collectors.toList());
             List<Player> result = clubService.changePlayers(playerModel, id);
             //map into dto for return
             List<PlayerWithoutClub> response = result.stream()
@@ -105,13 +117,13 @@ public class ClubRestController {
     ) {
             List<Player> playerEntities = players.stream()
                 .map(playerRestMapper::toModel)
-                .toList();
+                .collect(Collectors.toList());
             //Add players into club
             List<Player> updatedPlayers = clubService.addPlayerIntoCLub(id, playerEntities);
             //return result for api
             List<PlayerWithoutClub> result = updatedPlayers.stream()
                 .map(playerRestMapper::toPlayerWithoutClub)
-                .toList();
+                .collect(Collectors.toList());
 
             return ResponseEntity.ok(result);
     }

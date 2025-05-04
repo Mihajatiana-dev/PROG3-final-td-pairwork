@@ -23,18 +23,12 @@ public class ClubService {
     private final PlayerDAO playerDAO;
     private final ClubRestMapper clubRestMapper;
 
-    public List<ClubResponse> getAllClubResponses(int page, int size) {
-        return clubDAO.showAll(page, size)
-                .stream()
-                .map(clubRestMapper::toRest)
-                .toList();
+    public List<Club> getAllClubResponses(int page, int size) {
+        return clubDAO.showAll(page, size);
     }
 
-    public List<ClubResponse> saveAllClubResponses(List<ClubSimpleRequest> clubToSave) {
-        return clubDAO.saveAll(clubToSave)
-                .stream()
-                .map(clubRestMapper::toRest)
-                .toList();
+    public List<Club> saveAllClubResponses(List<Club> clubToSave) {
+        return clubDAO.saveAll(clubToSave);
     }
 
 //    public List<PlayerWithoutClub> getPlayers(String clubId) {

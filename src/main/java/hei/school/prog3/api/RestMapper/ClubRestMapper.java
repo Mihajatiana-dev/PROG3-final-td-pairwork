@@ -1,5 +1,6 @@
 package hei.school.prog3.api.RestMapper;
 
+import hei.school.prog3.api.dto.request.ClubSimpleRequest;
 import hei.school.prog3.api.dto.response.ClubResponse;
 import hei.school.prog3.api.dto.response.CoachResponse;
 import hei.school.prog3.model.Club;
@@ -20,5 +21,14 @@ public class ClubRestMapper  {
                 club.getStadium(),
                 coachResponse
         );
+    }
+    public Club toModel(ClubSimpleRequest clubSimpleRequest){
+        Club club = new Club();
+        club.setId(clubSimpleRequest.getId());
+        club.setName(clubSimpleRequest.getName());
+        club.setAcronym(clubSimpleRequest.getAcronym());
+        club.setYearCreation(clubSimpleRequest.getYearCreation());
+        club.setStadium(clubSimpleRequest.getStadium());
+        return club;
     }
 }

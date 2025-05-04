@@ -102,7 +102,7 @@ public class ClubDAO implements GenericOperations<Club> {
     }
 
 
-    public List<Club> saveAll(List<ClubSimpleRequest> clubToSave) {
+    public List<Club> saveAll(List<Club> clubToSave) {
         List<Club> clubList = new ArrayList<>();
         String upsertClubSql = """
                 INSERT INTO club (club_id, club_name, acronym, year_creation, stadium, coach_id)
@@ -127,9 +127,9 @@ public class ClubDAO implements GenericOperations<Club> {
              PreparedStatement clubStmt = connection.prepareStatement(upsertClubSql);
              PreparedStatement insertCoachStmt = connection.prepareStatement(insertCoachSql)) {
 
-            for (ClubSimpleRequest request : clubToSave) {
+            for (Club request : clubToSave) {
                 // manage the coach first
-                CoachSimpleRequest coachRequest = request.getCoach();
+                Coach coachRequest = request.getCoach();
                 // verify if the coach exists
                 Coach coach = coachDAO.findByName(coachRequest.getName());
 
