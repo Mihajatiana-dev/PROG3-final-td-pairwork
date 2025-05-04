@@ -39,7 +39,18 @@ public class PlayerRestMapper {
         );
     }
 
-    public static PlayerWithoutClub toPlayerWithoutClub(Player player) {
+    public Player toModel(PlayerWithoutClub playerWithoutClub) {
+        Player player = new Player();
+        player.setId(playerWithoutClub.getId());
+        player.setName(playerWithoutClub.getName());
+        player.setNumber(playerWithoutClub.getNumber());
+        player.setPosition(playerWithoutClub.getPosition());
+        player.setNationality(playerWithoutClub.getNationality());
+        player.setAge(playerWithoutClub.getAge());
+        return player;
+    }
+
+    public PlayerWithoutClub toPlayerWithoutClub(Player player) {
         PlayerWithoutClub dto = new PlayerWithoutClub();
         dto.setId(player.getId());
         dto.setName(player.getName());

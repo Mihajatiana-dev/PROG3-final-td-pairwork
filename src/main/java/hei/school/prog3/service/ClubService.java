@@ -57,12 +57,12 @@ public class ClubService {
         return club;
     }
 
-    public List<PlayerWithoutClub> addPlayerIntoCLub(String Id, List<PlayerWithoutClub> players) {
+    public List<Player> addPlayerIntoCLub(String Id, List<Player> players) {
         //String Id == clubID
         Club club = verifyExistingCLub(Id);
 
         // Validate
-        for (PlayerWithoutClub player : players) {
+        for (Player player : players) {
             Club existingClub = clubDAO.findClubByPlayerId(player.getId());
 
             if (existingClub != null && existingClub.getId() != null && !existingClub.getId().equals(club.getId())) {
@@ -71,7 +71,7 @@ public class ClubService {
         }
 
         // Insert
-        for (PlayerWithoutClub player : players) {
+        for (Player player : players) {
             Player existingPlayer = playerDAO.findById(player.getId());
             if (existingPlayer == null) {
                 Player newPlayer = new Player();
@@ -92,9 +92,7 @@ public class ClubService {
             }
         }
         Club updatedClub = clubDAO.getClubWithPlayers(Id);
-        return updatedClub.getPlayers().stream()
-                .map(PlayerRestMapper::toPlayerWithoutClub)
-                .toList();
+        return updatedClub.getPlayers();
     }
 }
 
