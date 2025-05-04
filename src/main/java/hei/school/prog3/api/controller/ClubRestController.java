@@ -125,7 +125,9 @@ public class ClubRestController {
                 .map(playerRestMapper::toPlayerWithoutClub)
                 .collect(Collectors.toList());
 
-            return ResponseEntity.ok(result);
+            return result.isEmpty()
+                    ? ResponseEntity.badRequest().build()
+                    : ResponseEntity.ok(result);
     }
 
     @GetMapping("/clubs/statistics/{seasonYear}")

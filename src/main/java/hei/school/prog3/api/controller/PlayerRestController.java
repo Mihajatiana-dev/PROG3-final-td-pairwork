@@ -58,13 +58,20 @@ public class PlayerRestController {
 
     @PutMapping("/players")
     public ResponseEntity<List<PlayerWithoutClub>> createOrUpdatePlayers(@RequestBody List<PlayerWithoutClub> players) {
-        List<Player> requestPlayers = playerService.saveAllPlayers(players);
+
+        List<Player> playersToSave = players.stream()
+                .map(playerRestMapper::toModel)
+                .collect(Collectors.toList());
+
+        List<Player> requestPlayers = playerService.saveAllPlayers(playersToSave);
 
         List<PlayerWithoutClub> savedPlayers = requestPlayers.stream()
                 .map(playerRestMapper::toPlayerWithoutClub)
                 .collect(Collectors.toList());
 
-        return savedPlayers.isEmpty() ? ResponseEntity.badRequest().build() : ResponseEntity.ok(savedPlayers);
+        return savedPlayers.isEmpty()
+                ? ResponseEntity.badRequest().build()
+                : ResponseEntity.ok(savedPlayers);
     }
 
     @GetMapping("/players/{id}/statistics/{seasonYear}")

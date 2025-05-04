@@ -189,7 +189,7 @@ public class PlayerDAO implements GenericOperations<Player> {
         return savedPlayers;
     }
 
-    public List<Player> saveAll(List<PlayerWithoutClub> players) {
+    public List<Player> saveAll(List<Player> players) {
         List<Player> savedPlayers = new ArrayList<>();
 
         String sql = """
@@ -207,7 +207,7 @@ public class PlayerDAO implements GenericOperations<Player> {
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement pstm = connection.prepareStatement(sql)) {
-            for (PlayerWithoutClub player : players) {
+            for (Player player : players) {
                 pstm.setObject(1, UUID.fromString(player.getId()), Types.OTHER);
                 pstm.setString(2, player.getName());
                 pstm.setInt(3, player.getNumber());
