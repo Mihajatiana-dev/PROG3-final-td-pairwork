@@ -60,7 +60,7 @@ public class MatchRestController {
         List<Match> matches = matchService.getFilteredMatches(seasonYear, filters, page, size);
 
         return matches.isEmpty()
-                ? ResponseEntity.noContent().build()
+                ? ResponseEntity.notFound().build()
                 : ResponseEntity.ok(matches);
     }
 
