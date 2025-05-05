@@ -5,6 +5,7 @@ import hei.school.prog3.api.dto.request.UpdateMatchStatus;
 import hei.school.prog3.model.Match;
 import hei.school.prog3.service.MatchService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,9 +16,9 @@ public class MatchRestController {
     private final MatchService matchService;
 
     @PostMapping("/matchMaker/{seasonYear}")
-    public List<Match> createMatch(@PathVariable int seasonYear) {
-        matchService.createAll(seasonYear);
-        return null;
+    public ResponseEntity<List<Match>> createMatch(@PathVariable int seasonYear) {
+        List<Match> matches = matchService.createAll(seasonYear);
+        return ResponseEntity.ok(matches);
     }
 
     @GetMapping("/matches/{seasonYear}")
