@@ -5,5 +5,6 @@ CREATE TABLE goal
     club_id   UUID REFERENCES club (club_id),
     match_id  UUID    NOT NULL REFERENCES match (match_id),
     minute    INTEGER NOT NULL,
-    own_goal  BOOLEAN          DEFAULT FALSE
+    own_goal  BOOLEAN          DEFAULT FALSE,
+    CHECK ( minute >= 90 )
 )
