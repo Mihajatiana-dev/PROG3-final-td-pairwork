@@ -13,12 +13,16 @@ import java.util.List;
 public class MatchRestController {
 
     @PostMapping("/matchMaker/{seasonYear}")
-    public void createMatch() {
+    public void createMatch(@PathVariable int seasonYear) {
 
     }
 
     @GetMapping("/matches/{seasonYear}")
-    public List<Match> getAllMatches() {
+    public List<Match> getAllMatches(@PathVariable int seasonYear,
+                                     @RequestParam(value = "matchStatus", required = false) String matchStatus,
+                                     @RequestParam(value = "clubPlayingName", required = false) String clubPlayingName,
+                                     @RequestParam(value = "matchAfter", required = false) String matchAfter,
+                                     @RequestParam(value = "matchBeforeOrEquals", required = false) String matchBeforeOrEquals) {
         return null;
     }
 
