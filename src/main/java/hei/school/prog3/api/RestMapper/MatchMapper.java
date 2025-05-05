@@ -1,7 +1,7 @@
 package hei.school.prog3.api.RestMapper;
 
 import hei.school.prog3.model.Club;
-import hei.school.prog3.model.MatchWithAllInformations;
+import hei.school.prog3.model.Match;
 import hei.school.prog3.model.Season;
 import hei.school.prog3.model.enums.MatchStatus;
 import hei.school.prog3.model.enums.SeasonStatus;
@@ -14,8 +14,8 @@ import java.sql.Timestamp;
 @Component
 public class MatchMapper {
 
-    public MatchWithAllInformations mapMatch(ResultSet rs) throws SQLException {
-        MatchWithAllInformations match = new MatchWithAllInformations();
+    public Match mapMatch(ResultSet rs) throws SQLException {
+        Match match = new Match();
         match.setId(rs.getString("match_id"));
         match.setStadium(rs.getString("stadium"));
 

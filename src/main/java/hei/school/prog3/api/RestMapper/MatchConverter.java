@@ -1,7 +1,6 @@
 package hei.school.prog3.api.RestMapper;
 
 import hei.school.prog3.model.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -11,8 +10,8 @@ import java.util.stream.Collectors;
 @Component
 public class MatchConverter {
 
-    public Match convertToMatch(MatchWithAllInformations matchWithInfo) {
-        Match match = new Match();
+    public MatchMinimumInfo convertToMatch(Match matchWithInfo) {
+        MatchMinimumInfo match = new MatchMinimumInfo();
         match.setId(matchWithInfo.getId());
         match.setStadium(matchWithInfo.getStadium());
         match.setMatchDatetime(matchWithInfo.getMatchDatetime());
@@ -48,14 +47,14 @@ public class MatchConverter {
         return clubScore;
     }
 
-    public List<Match> convertAll(List<MatchWithAllInformations> matchesWithInfo) {
+    public List<MatchMinimumInfo> convertAll(List<Match> matchesWithInfo) {
         return matchesWithInfo.stream()
                 .map(this::convert)
                 .collect(Collectors.toList());
     }
 
-    public Match convert(MatchWithAllInformations matchWithInfo) {
-        Match match = new Match();
+    public MatchMinimumInfo convert(Match matchWithInfo) {
+        MatchMinimumInfo match = new MatchMinimumInfo();
         match.setId(matchWithInfo.getId());
         match.setStadium(matchWithInfo.getStadium());
         match.setMatchDatetime(matchWithInfo.getMatchDatetime());

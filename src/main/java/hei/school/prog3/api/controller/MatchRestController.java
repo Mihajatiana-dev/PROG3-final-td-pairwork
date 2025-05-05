@@ -3,7 +3,7 @@ package hei.school.prog3.api.controller;
 import hei.school.prog3.api.dto.request.AddGoal;
 import hei.school.prog3.api.dto.request.UpdateMatchStatus;
 import hei.school.prog3.model.FilterCriteria;
-import hei.school.prog3.model.Match;
+import hei.school.prog3.model.MatchMinimumInfo;
 import hei.school.prog3.model.enums.MatchStatus;
 import hei.school.prog3.service.MatchService;
 import lombok.RequiredArgsConstructor;
@@ -22,13 +22,13 @@ public class MatchRestController {
     private final MatchService matchService;
 
     @PostMapping("/matchMaker/{seasonYear}")
-    public ResponseEntity<List<Match>> createMatch(@PathVariable int seasonYear) {
-        List<Match> matches = matchService.createAll(seasonYear);
+    public ResponseEntity<List<MatchMinimumInfo>> createMatch(@PathVariable int seasonYear) {
+        List<MatchMinimumInfo> matches = matchService.createAll(seasonYear);
         return ResponseEntity.ok(matches);
     }
 
     @GetMapping("/matches/{seasonYear}")
-    public ResponseEntity<List<Match>> getAllMatches(
+    public ResponseEntity<List<MatchMinimumInfo>> getAllMatches(
             @PathVariable int seasonYear,
             @RequestParam(value = "matchStatus", required = false) String matchStatus,
             @RequestParam(value = "clubPlayingName", required = false) String clubPlayingName,
@@ -58,7 +58,7 @@ public class MatchRestController {
             filters.add(new FilterCriteria("matchBeforeOrEquals", matchBeforeOrEquals));
         }
 
-        List<Match> matches = matchService.getFilteredMatches(seasonYear, filters, page, size);
+        List<MatchMinimumInfo> matches = matchService.getFilteredMatches(seasonYear, filters, page, size);
 
         return matches.isEmpty()
                 ? ResponseEntity.notFound().build()
@@ -72,7 +72,7 @@ public class MatchRestController {
                 return ResponseEntity.badRequest().body("Status cannot be null. Valid values are: NOT_STARTED, STARTED, FINISHED");
             }
 
-            Match updatedMatch = matchService.updateMatchStatus(id, statusUpdate.getStatus());
+            MatchMinimumInfo updatedMatch = matchService.updateMatchStatus(id, statusUpdate.getStatus());
             return ResponseEntity.ok(updatedMatch);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -82,7 +82,7 @@ public class MatchRestController {
     }
 
     @PostMapping("/matches/{id}/goals")
-    public Match addGoals(@PathVariable String id, @RequestBody List<AddGoal> goalsToAdd) {
+    public MatchMinimumInfo addGoals(@PathVariable String id, @RequestBody List<AddGoal> goalsToAdd) {
         return null;
     }
 }

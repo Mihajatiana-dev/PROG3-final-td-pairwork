@@ -16,32 +16,32 @@ import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
-public class MatchDAO implements GenericOperations<Match> {
+public class MatchDAO implements GenericOperations<MatchMinimumInfo> {
     private final DbConnection dataSource;
     private final ClubDAO clubDAO;
     private final MatchMapper matchMapper;
     private final MatchConverter matchConverter;
 
     @Override
-    public List<Match> showAll(int page, int size) {
+    public List<MatchMinimumInfo> showAll(int page, int size) {
         return List.of();
     }
 
     @Override
-    public List<Match> save(List<Match> matches) {
+    public List<MatchMinimumInfo> save(List<MatchMinimumInfo> matches) {
         return List.of();
     }
 
     @Override
-    public Match findById(String modelId) {
-        MatchWithAllInformations matchWithInfo = findMatchById(modelId);
+    public MatchMinimumInfo findById(String modelId) {
+        Match matchWithInfo = findMatchById(modelId);
         if (matchWithInfo == null) {
             return null;
         }
         return matchConverter.convert(matchWithInfo);
     }
 
-    public MatchWithAllInformations findMatchById(String matchId) {
+    public Match findMatchById(String matchId) {
         String sql = "SELECT m.match_id, m.stadium, m.match_datetime, m.status, " +
                 "home.club_id as home_club_id, home.club_name as home_club_name, " +
                 "home.acronym as home_acronym, away.club_id as away_club_id, " +
@@ -70,7 +70,7 @@ public class MatchDAO implements GenericOperations<Match> {
         return null;
     }
 
-    public List<MatchWithAllInformations> createSeasonMatches(UUID seasonId) {
+    public List<Match> createSeasonMatches(UUID seasonId) {
         // Vérifier que la saison est bien NOT_STARTED
         if (!isSeasonNotStarted(seasonId)) {
             throw new IllegalArgumentException("La saison doit avoir le statut NOT_STARTED");
@@ -82,7 +82,7 @@ public class MatchDAO implements GenericOperations<Match> {
             throw new IllegalStateException("Au moins 2 clubs sont nécessaires pour créer des matchs");
         }
 
-        List<MatchWithAllInformations> matches = new ArrayList<>();
+        List<Match> matches = new ArrayList<>();
 
         // Créer les matchs aller-retour pour chaque paire de clubs
         for (int i = 0; i < clubs.size(); i++) {
@@ -91,7 +91,7 @@ public class MatchDAO implements GenericOperations<Match> {
                 Club awayClub = clubs.get(j);
 
                 // Match aller
-                MatchWithAllInformations homeMatch = createMatch(
+                Match homeMatch = createMatch(
                         homeClub,
                         awayClub,
                         homeClub.getStadium(),
@@ -101,7 +101,7 @@ public class MatchDAO implements GenericOperations<Match> {
                 matches.add(homeMatch);
 
                 // Match retour
-                MatchWithAllInformations awayMatch = createMatch(
+                Match awayMatch = createMatch(
                         awayClub,
                         homeClub,
                         awayClub.getStadium(),
@@ -168,8 +168,8 @@ public class MatchDAO implements GenericOperations<Match> {
         return clubs;
     }
 
-    private MatchWithAllInformations createMatch(Club homeClub, Club awayClub, String stadium,
-                                                 LocalDateTime matchDatetime, UUID seasonId) {
+    private Match createMatch(Club homeClub, Club awayClub, String stadium,
+                              LocalDateTime matchDatetime, UUID seasonId) {
         String sql = "INSERT INTO match (home_club_id, away_club_id, stadium, match_datetime, season_id) " +
                 "VALUES (?, ?, ?, ?, ?) RETURNING match_id";
 
@@ -197,7 +197,7 @@ public class MatchDAO implements GenericOperations<Match> {
                 Season season = new Season();
                 season.setId(seasonId.toString());
 
-                return new MatchWithAllInformations(
+                return new Match(
                         matchId,
                         homeClub,
                         awayClub,
@@ -213,7 +213,7 @@ public class MatchDAO implements GenericOperations<Match> {
         }
     }
 
-    public MatchWithAllInformations updateMatchStatus(String matchId, MatchStatus newStatus) {
+    public Match updateMatchStatus(String matchId, MatchStatus newStatus) {
         String sql = "UPDATE match SET status = ?::match_status_enum WHERE match_id = ? RETURNING match_id";
 
         try (Connection connection = dataSource.getConnection();
@@ -234,15 +234,15 @@ public class MatchDAO implements GenericOperations<Match> {
         return null;
     }
 
-    public List<MatchWithAllInformations> findBySeasonAndFilters(int seasonYear,
-                                                                 List<FilterCriteria> filterCriteriaList,
-                                                                 int page,
-                                                                 int size) {
+    public List<Match> findBySeasonAndFilters(int seasonYear,
+                                              List<FilterCriteria> filterCriteriaList,
+                                              int page,
+                                              int size) {
         if (page < 1) {
             throw new IllegalArgumentException("Page must be greater than 0 but actual is " + page);
         }
 
-        List<MatchWithAllInformations> matches = new ArrayList<>();
+        List<Match> matches = new ArrayList<>();
 
         String sql = "SELECT m.match_id, m.stadium, m.match_datetime, m.status, " +
                 "home.club_id as home_club_id, home.club_name as home_club_name, " +
@@ -297,7 +297,7 @@ public class MatchDAO implements GenericOperations<Match> {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    MatchWithAllInformations match = matchMapper.mapMatch(resultSet);
+                    Match match = matchMapper.mapMatch(resultSet);
                     matches.add(match);
                 }
             }
