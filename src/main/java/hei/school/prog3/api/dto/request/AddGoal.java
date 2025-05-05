@@ -1,4 +1,4 @@
-package hei.school.prog3.model;
+package hei.school.prog3.api.dto.request;
 
 import lombok.*;
 
@@ -8,8 +8,8 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 @EqualsAndHashCode
-public class Scorer {
-    private PlayerMinimumInfo player;
+public class AddGoal {
+    private String clubId;
+    private String scorerIdentifier;
     private Integer minuteOfGoal;
-    private Boolean ownGoal;
 }
