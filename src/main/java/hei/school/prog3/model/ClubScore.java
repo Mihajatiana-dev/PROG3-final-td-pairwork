@@ -1,5 +1,7 @@
 package hei.school.prog3.model;
 
+import java.util.List;
+
 import lombok.*;
 
 @Getter
@@ -8,8 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 @EqualsAndHashCode
-public class Scorer {
-    private PlayerMinimumInfo player;
-    private Integer minuteOfGoal;
-    private Boolean ownGoal;
+public class ClubScore {
+    private int score;
+    private List<Scorer> scorers;
 }

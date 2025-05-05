@@ -8,8 +8,8 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 @EqualsAndHashCode
-public class Scorer {
-    private PlayerMinimumInfo player;
-    private Integer minuteOfGoal;
-    private Boolean ownGoal;
+public class ClubMinimumInfo {
+    private String id;
+    private String name;
+    private String acronym;
 }
