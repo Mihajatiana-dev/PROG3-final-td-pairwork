@@ -1,5 +1,6 @@
 package hei.school.prog3.dao.operations;
 
+import hei.school.prog3.api.RestMapper.MatchMapper;
 import hei.school.prog3.config.DbConnection;
 import hei.school.prog3.model.*;
 import hei.school.prog3.model.enums.MatchStatus;
@@ -16,6 +17,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MatchDAO implements GenericOperations<Match> {
     private final DbConnection dataSource;
+    private final ClubDAO clubDAO;
+    private final MatchMapper matchMapper;
 
     @Override
     public List<Match> showAll(int page, int size) {
@@ -173,5 +176,79 @@ public class MatchDAO implements GenericOperations<Match> {
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la création du match", e);
         }
+    }
+
+    public List<MatchWithAllInformations> findBySeasonAndFilters(int seasonYear,
+                                                                 List<FilterCriteria> filterCriteriaList,
+                                                                 int page,
+                                                                 int size) {
+        if (page < 1) {
+            throw new IllegalArgumentException("Page must be greater than 0 but actual is " + page);
+        }
+
+        List<MatchWithAllInformations> matches = new ArrayList<>();
+
+        String sql = "SELECT m.match_id, m.stadium, m.match_datetime, m.status, " +
+                "home.club_id as home_club_id, home.club_name as home_club_name, " +
+                "home.acronym as home_acronym, away.club_id as away_club_id, " +
+                "away.club_name as away_club_name, away.acronym as away_acronym, " +
+                "s.season_id, s.alias, s.year, s.status as season_status " +
+                "FROM match m " +
+                "JOIN club home ON m.home_club_id = home.club_id " +
+                "JOIN club away ON m.away_club_id = away.club_id " +
+                "JOIN season s ON m.season_id = s.season_id " +
+                "WHERE s.year = ?";
+
+        List<String> conditions = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
+        values.add(seasonYear);
+
+        for (FilterCriteria filterCriteria : filterCriteriaList) {
+            String column = filterCriteria.getColumn();
+            Object value = filterCriteria.getValue();
+
+            if ("status".equals(column)) {
+                conditions.add("m.status = ?::match_status_enum");
+                values.add(value.toString());
+            } else if ("clubName".equals(column)) {
+                conditions.add("(home.club_name ILIKE ? OR away.club_name ILIKE ?)");
+                values.add("%" + value + "%");
+                values.add("%" + value + "%");
+            } else if ("matchAfter".equals(column)) {
+                conditions.add("m.match_datetime > ?");
+                values.add(Timestamp.valueOf((LocalDateTime) value));
+            } else if ("matchBeforeOrEquals".equals(column)) {
+                conditions.add("m.match_datetime <= ?");
+                values.add(Timestamp.valueOf((LocalDateTime) value));
+            }
+        }
+
+        if (!conditions.isEmpty()) {
+            sql += " AND " + String.join(" AND ", conditions);
+        }
+
+        sql += " LIMIT ? OFFSET ?";
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            int index = 1;
+            for (Object value : values) {
+                statement.setObject(index++, value);
+            }
+            statement.setInt(index++, size);
+            statement.setInt(index, size * (page - 1));
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    MatchWithAllInformations match = matchMapper.mapMatch(resultSet);
+                    matches.add(match);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error fetching matches", e);
+        }
+
+        return matches;
     }
 }
