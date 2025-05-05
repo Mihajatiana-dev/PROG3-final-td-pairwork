@@ -219,14 +219,25 @@ public class MatchDAO implements GenericOperations<MatchMinimumInfo> {
         }
     }
 
-    public Match updateMatchStatus(String matchId, MatchStatus newStatus) {
-        String sql = "UPDATE match SET status = ?::match_status_enum WHERE match_id = ? RETURNING match_id";
+    public Match updateMatchStatus(String matchId, MatchStatus newStatus, boolean setMatchDatetime) {
+        String sql;
+        if (setMatchDatetime) {
+            sql = "UPDATE match SET status = ?::match_status_enum, match_datetime = ? WHERE match_id = ? RETURNING match_id";
+        } else {
+            sql = "UPDATE match SET status = ?::match_status_enum WHERE match_id = ? RETURNING match_id";
+        }
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, newStatus.toString());
-            statement.setObject(2, UUID.fromString(matchId));
+
+            if (setMatchDatetime) {
+                statement.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+                statement.setObject(3, UUID.fromString(matchId));
+            } else {
+                statement.setObject(2, UUID.fromString(matchId));
+            }
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {

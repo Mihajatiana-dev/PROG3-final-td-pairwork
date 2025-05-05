@@ -77,8 +77,11 @@ public class MatchService {
                 "Error: Invalid status transition. Cannot change status from " + currentStatus + " to " + newStatus + ". Valid transitions are: NOT_STARTED -> STARTED, STARTED -> FINISHED");
         }
 
+        // Check if we need to set matchDatetime (only when transitioning from NOT_STARTED to STARTED)
+        boolean setMatchDatetime = (currentStatus == MatchStatus.NOT_STARTED && newStatus == MatchStatus.STARTED);
+
         // Update the status
-        Match updatedMatch = matchDAO.updateMatchStatus(matchId, newStatus);
+        Match updatedMatch = matchDAO.updateMatchStatus(matchId, newStatus, setMatchDatetime);
         if (updatedMatch == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
                 "Error: Failed to update match status. Please try again later.");
