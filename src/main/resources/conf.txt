@@ -1,0 +1,27 @@
+creer 2 profil spring sur le bouton edit configuration avec +
+
+dupliquer application.proprieties
+
+-Le nom des progil doit etre celle de application.proprieties
+exemple :
+application-liga.proprieties  (exemple-->profil name : liga)
+application-ligue1.proprieties (exemple-->profil name : ligue1)
+
+dans le edit build and run -modify--- ajouter VM options et mettre
+
+--Dspring.profiles.active=liga pour le 1er profil
+--Dspring.profiles.active=ligue1  pour 2eme profil ect ect
+
+exemple de application.proprieties de ela iany manao n env an la eo
+
+server.port=8082
+spring.application.name=PROG3-Championship-LIGUE1
+spring.datasource.url=${dbUrl}
+spring.datasource.username=${dbUsername}
+spring.datasource.password=${dbPassword}
+
+server.port=8080
+spring.application.name=liga_championship
+spring.datasource.url=${dbUrl}
+spring.datasource.username=${dbUsername}
+spring.datasource.password=${dbPassword}
