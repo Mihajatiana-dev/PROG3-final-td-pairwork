@@ -6,7 +6,7 @@ CREATE TABLE match
     home_club_id   UUID              NOT NULL REFERENCES club (club_id),
     away_club_id   UUID              NOT NULL REFERENCES club (club_id),
     stadium        VARCHAR(200)      NOT NULL,
-    match_datetime TIMESTAMP         NOT NULL,
+    match_datetime TIMESTAMP,
     status         match_status_enum NOT NULL DEFAULT 'NOT_STARTED',
     season_id      UUID REFERENCES season (season_id),
     CHECK (home_club_id <> away_club_id)

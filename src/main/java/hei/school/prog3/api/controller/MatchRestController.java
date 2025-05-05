@@ -3,6 +3,7 @@ package hei.school.prog3.api.controller;
 import hei.school.prog3.api.dto.request.AddGoal;
 import hei.school.prog3.api.dto.request.UpdateMatchStatus;
 import hei.school.prog3.model.Match;
+import hei.school.prog3.service.MatchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,10 +12,12 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class MatchRestController {
+    private final MatchService matchService;
 
     @PostMapping("/matchMaker/{seasonYear}")
-    public void createMatch(@PathVariable int seasonYear) {
-
+    public List<Match> createMatch(@PathVariable int seasonYear) {
+        matchService.createAll(seasonYear);
+        return null;
     }
 
     @GetMapping("/matches/{seasonYear}")
