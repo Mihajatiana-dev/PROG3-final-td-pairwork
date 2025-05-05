@@ -1,5 +1,6 @@
 package hei.school.prog3.dao.operations;
 
+import hei.school.prog3.api.RestMapper.MatchConverter;
 import hei.school.prog3.api.RestMapper.MatchMapper;
 import hei.school.prog3.config.DbConnection;
 import hei.school.prog3.model.*;
@@ -19,6 +20,7 @@ public class MatchDAO implements GenericOperations<Match> {
     private final DbConnection dataSource;
     private final ClubDAO clubDAO;
     private final MatchMapper matchMapper;
+    private final MatchConverter matchConverter;
 
     @Override
     public List<Match> showAll(int page, int size) {
@@ -32,6 +34,39 @@ public class MatchDAO implements GenericOperations<Match> {
 
     @Override
     public Match findById(String modelId) {
+        MatchWithAllInformations matchWithInfo = findMatchById(modelId);
+        if (matchWithInfo == null) {
+            return null;
+        }
+        return matchConverter.convert(matchWithInfo);
+    }
+
+    public MatchWithAllInformations findMatchById(String matchId) {
+        String sql = "SELECT m.match_id, m.stadium, m.match_datetime, m.status, " +
+                "home.club_id as home_club_id, home.club_name as home_club_name, " +
+                "home.acronym as home_acronym, away.club_id as away_club_id, " +
+                "away.club_name as away_club_name, away.acronym as away_acronym, " +
+                "s.season_id, s.alias, s.year, s.status as season_status " +
+                "FROM match m " +
+                "JOIN club home ON m.home_club_id = home.club_id " +
+                "JOIN club away ON m.away_club_id = away.club_id " +
+                "JOIN season s ON m.season_id = s.season_id " +
+                "WHERE m.match_id = ?";
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setObject(1, UUID.fromString(matchId));
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return matchMapper.mapMatch(resultSet);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error fetching match with ID: " + matchId, e);
+        }
+
         return null;
     }
 
@@ -176,6 +211,27 @@ public class MatchDAO implements GenericOperations<Match> {
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la création du match", e);
         }
+    }
+
+    public MatchWithAllInformations updateMatchStatus(String matchId, MatchStatus newStatus) {
+        String sql = "UPDATE match SET status = ?::match_status_enum WHERE match_id = ? RETURNING match_id";
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, newStatus.toString());
+            statement.setObject(2, UUID.fromString(matchId));
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return findMatchById(matchId);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error updating match status for ID: " + matchId, e);
+        }
+
+        return null;
     }
 
     public List<MatchWithAllInformations> findBySeasonAndFilters(int seasonYear,

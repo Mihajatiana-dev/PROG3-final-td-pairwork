@@ -7,6 +7,7 @@ import hei.school.prog3.model.FilterCriteria;
 import hei.school.prog3.model.Match;
 import hei.school.prog3.model.MatchWithAllInformations;
 import hei.school.prog3.model.Season;
+import hei.school.prog3.model.enums.MatchStatus;
 import hei.school.prog3.model.enums.SeasonStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -62,5 +63,42 @@ public class MatchService {
 
         // convert
         return matchConverter.convertAll(matchesWithInfo);
+    }
+
+    public Match updateMatchStatus(String matchId, MatchStatus newStatus) {
+        // Get the current match
+        MatchWithAllInformations currentMatch = matchDAO.findMatchById(matchId);
+        if (currentMatch == null) {
+            throw new IllegalArgumentException("Match not found with ID: " + matchId);
+        }
+
+        // Get the current status
+        MatchStatus currentStatus = currentMatch.getActualStatus();
+
+        // Validate the status transition
+        if (!isValidStatusTransition(currentStatus, newStatus)) {
+            throw new IllegalArgumentException("Invalid status transition from " + currentStatus + " to " + newStatus);
+        }
+
+        // Update the status
+        MatchWithAllInformations updatedMatch = matchDAO.updateMatchStatus(matchId, newStatus);
+        if (updatedMatch == null) {
+            throw new RuntimeException("Failed to update match status");
+        }
+
+        // Convert
+        return matchConverter.convert(updatedMatch);
+    }
+
+    private boolean isValidStatusTransition(MatchStatus currentStatus, MatchStatus newStatus) {
+        // NOT_STARTED > STARTED > FINISHED
+        if (currentStatus == MatchStatus.NOT_STARTED && newStatus == MatchStatus.STARTED) {
+            return true;
+        } else if (currentStatus == MatchStatus.STARTED && newStatus == MatchStatus.FINISHED) {
+            return true;
+        } else if (currentStatus == newStatus) {
+            return false;
+        }
+        return false;
     }
 }

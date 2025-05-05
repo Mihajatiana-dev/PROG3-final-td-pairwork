@@ -8,6 +8,7 @@ import hei.school.prog3.model.enums.MatchStatus;
 import hei.school.prog3.service.MatchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,8 +66,19 @@ public class MatchRestController {
     }
 
     @PutMapping("/matches/{id}/status")
-    public Match updateMatchStatus(@PathVariable String id, @RequestBody UpdateMatchStatus status) {
-        return null;
+    public ResponseEntity<?> updateMatchStatus(@PathVariable String id, @RequestBody UpdateMatchStatus statusUpdate) {
+        try {
+            if (statusUpdate.getStatus() == null) {
+                return ResponseEntity.badRequest().body("Status cannot be null. Valid values are: NOT_STARTED, STARTED, FINISHED");
+            }
+
+            Match updatedMatch = matchService.updateMatchStatus(id, statusUpdate.getStatus());
+            return ResponseEntity.ok(updatedMatch);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PostMapping("/matches/{id}/goals")
