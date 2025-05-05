@@ -86,12 +86,12 @@ public class GoalDAO {
         String sql = "WITH home_goals AS (" +
                 "    SELECT COUNT(*) AS count FROM goal g " +
                 "    JOIN match m ON g.match_id = m.match_id " +
-                "    WHERE g.match_id = ? AND ((g.club_id = m.home_club_id AND g.own_goal = false) OR (g.club_id = m.away_club_id AND g.own_goal = true))" +
+                "    WHERE g.match_id = ? AND ((g.club_id = m.home_club_id AND g.own_goal = false) OR (g.club_id = m.home_club_id AND g.own_goal = true))" +
                 "), " +
                 "away_goals AS (" +
                 "    SELECT COUNT(*) AS count FROM goal g " +
                 "    JOIN match m ON g.match_id = m.match_id " +
-                "    WHERE g.match_id = ? AND ((g.club_id = m.away_club_id AND g.own_goal = false) OR (g.club_id = m.home_club_id AND g.own_goal = true))" +
+                "    WHERE g.match_id = ? AND ((g.club_id = m.away_club_id AND g.own_goal = false) OR (g.club_id = m.away_club_id AND g.own_goal = true))" +
                 ") " +
                 "INSERT INTO match_score (match_id, home_score, away_score) " +
                 "VALUES (?, (SELECT count FROM home_goals), (SELECT count FROM away_goals)) " +
