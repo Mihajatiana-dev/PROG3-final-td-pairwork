@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -144,5 +145,29 @@ public class SeasonDAO implements GenericOperations<Season> {
             );
         }
         return true;
+    }
+
+    public Optional<Season> findByYear(int year) {
+        String sql = "SELECT season_id, alias, status, year FROM season WHERE year = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, year);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                Season season = new Season();
+                season.setId(rs.getString("season_id"));
+                season.setAlias(rs.getString("alias"));
+                season.setStatus(SeasonStatus.valueOf(rs.getString("status")));
+                season.setYear(rs.getInt("year"));
+                return Optional.of(season);
+            }
+            return Optional.empty();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error finding season by year", e);
+        }
     }
 }
