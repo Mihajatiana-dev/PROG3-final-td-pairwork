@@ -4,6 +4,7 @@ import hei.school.prog3.model.enums.MatchStatus;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -19,4 +20,8 @@ public class Match {
     private LocalDateTime matchDatetime;
     private MatchStatus actualStatus;
     private Season season;
+    private Integer homeScore;
+    private Integer awayScore;
+    private List<Scorer> homeScorers;
+    private List<Scorer> awayScorers;
 }

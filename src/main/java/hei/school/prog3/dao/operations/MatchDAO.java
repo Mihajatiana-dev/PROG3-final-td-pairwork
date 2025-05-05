@@ -46,11 +46,13 @@ public class MatchDAO implements GenericOperations<MatchMinimumInfo> {
                 "home.club_id as home_club_id, home.club_name as home_club_name, " +
                 "home.acronym as home_acronym, away.club_id as away_club_id, " +
                 "away.club_name as away_club_name, away.acronym as away_acronym, " +
-                "s.season_id, s.alias, s.year, s.status as season_status " +
+                "s.season_id, s.alias, s.year, s.status as season_status, " +
+                "ms.home_score, ms.away_score " +
                 "FROM match m " +
                 "JOIN club home ON m.home_club_id = home.club_id " +
                 "JOIN club away ON m.away_club_id = away.club_id " +
                 "JOIN season s ON m.season_id = s.season_id " +
+                "LEFT JOIN match_score ms ON m.match_id = ms.match_id " +
                 "WHERE m.match_id = ?";
 
         try (Connection connection = dataSource.getConnection();
@@ -204,7 +206,11 @@ public class MatchDAO implements GenericOperations<MatchMinimumInfo> {
                         stadium,
                         null, // matchDatetime = null
                         MatchStatus.NOT_STARTED,
-                        season
+                        season,
+                        null,
+                        null,
+                        null,
+                        null
                 );
             }
             throw new RuntimeException("Échec de la création du match");

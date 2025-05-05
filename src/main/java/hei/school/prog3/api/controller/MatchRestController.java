@@ -11,6 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -69,20 +70,29 @@ public class MatchRestController {
     public ResponseEntity<?> updateMatchStatus(@PathVariable String id, @RequestBody UpdateMatchStatus statusUpdate) {
         try {
             if (statusUpdate.getStatus() == null) {
-                return ResponseEntity.badRequest().body("Status cannot be null. Valid values are: NOT_STARTED, STARTED, FINISHED");
+                return ResponseEntity.badRequest().body("Error: Status cannot be null. Valid values are: NOT_STARTED, STARTED, FINISHED");
             }
 
             MatchMinimumInfo updatedMatch = matchService.updateMatchStatus(id, statusUpdate.getStatus());
             return ResponseEntity.ok(updatedMatch);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (ResponseStatusException e) {
+            // Return a ResponseEntity with the error message and status code
+            return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
     }
 
     @PostMapping("/matches/{id}/goals")
-    public MatchMinimumInfo addGoals(@PathVariable String id, @RequestBody List<AddGoal> goalsToAdd) {
-        return null;
+    public ResponseEntity<?> addGoals(@PathVariable String id, @RequestBody List<AddGoal> goalsToAdd) {
+        try {
+            MatchMinimumInfo updatedMatch = matchService.addGoals(id, goalsToAdd);
+            return ResponseEntity.ok(updatedMatch);
+        } catch (ResponseStatusException e) {
+            // Return a ResponseEntity with the error message and status code
+            return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
+        }
     }
 }
