@@ -11,11 +11,20 @@ import hei.school.prog3.exception.PlayerAlreadyAttachedException;
 import hei.school.prog3.exception.PlayerInformationMismatchException;
 import hei.school.prog3.exception.ResourceNotFoundException;
 import hei.school.prog3.model.Club;
+import hei.school.prog3.model.ClubMinimumInfo;
+import hei.school.prog3.model.ClubScore;
+import hei.school.prog3.model.ClubStatistics;
+import hei.school.prog3.model.FilterCriteria;
+import hei.school.prog3.model.Match;
+import hei.school.prog3.model.MatchClub;
+import hei.school.prog3.model.MatchMinimumInfo;
 import hei.school.prog3.model.Player;
+import hei.school.prog3.model.enums.MatchStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +32,7 @@ public class ClubService {
     private final ClubDAO clubDAO;
     private final PlayerDAO playerDAO;
     private final ClubRestMapper clubRestMapper;
+    private final MatchService matchService;
 
     public List<Club> getAllClubResponses(int page, int size) {
         return clubDAO.showAll(page, size);
@@ -124,5 +134,110 @@ public class ClubService {
         }
         Club updatedClub = clubDAO.getClubWithPlayers(Id);
         return updatedClub.getPlayers();
+    }
+
+    public List<ClubStatistics> getClubStatistics(int seasonYear, boolean hasToBeClassified) {
+        // Get all clubs
+        List<Club> allClubs = clubDAO.showAll(1, Integer.MAX_VALUE);
+
+        // Get all matches for the season that are FINISHED
+        List<FilterCriteria> filters = new ArrayList<>();
+        filters.add(new FilterCriteria("status", MatchStatus.FINISHED));
+        List<MatchMinimumInfo> finishedMatches = matchService.getFilteredMatches(seasonYear, filters, 1, Integer.MAX_VALUE);
+
+        // Create a map to store statistics for each club
+        Map<String, ClubStatistics> clubStatsMap = new HashMap<>();
+
+        // Initialize statistics for all clubs
+        for (Club club : allClubs) {
+            ClubStatistics stats = new ClubStatistics();
+            stats.setClub(club);
+            stats.setRankingPoints(0);
+            stats.setScoredGoals(0);
+            stats.setConcededGoals(0);
+            stats.setDifferenceGoals(0);
+            stats.setCleanSheetNumber(0);
+
+            clubStatsMap.put(club.getId(), stats);
+        }
+
+        // Calculate statistics based on matches
+        for (MatchMinimumInfo match : finishedMatches) {
+            String homeClubId = match.getClubPlayingHome().getClub().getId();
+            String awayClubId = match.getClubPlayingAway().getClub().getId();
+
+            // Get club statistics objects
+            ClubStatistics homeStats = clubStatsMap.get(homeClubId);
+            ClubStatistics awayStats = clubStatsMap.get(awayClubId);
+
+            // Skip if either club doesn't exist in our map
+            if (homeStats == null || awayStats == null) {
+                continue;
+            }
+
+            // Get scores
+            int homeScore = match.getClubPlayingHome().getClubScore() != null ? match.getClubPlayingHome().getClubScore().getScore() : 0;
+            int awayScore = match.getClubPlayingAway().getClubScore() != null ? match.getClubPlayingAway().getClubScore().getScore() : 0;
+
+            // Update scored and conceded goals
+            homeStats.setScoredGoals(homeStats.getScoredGoals() + homeScore);
+            homeStats.setConcededGoals(homeStats.getConcededGoals() + awayScore);
+            awayStats.setScoredGoals(awayStats.getScoredGoals() + awayScore);
+            awayStats.setConcededGoals(awayStats.getConcededGoals() + homeScore);
+
+            // Update ranking points
+            if (homeScore > awayScore) {
+                // Home win
+                homeStats.setRankingPoints(homeStats.getRankingPoints() + 3);
+            } else if (homeScore < awayScore) {
+                // Away win
+                awayStats.setRankingPoints(awayStats.getRankingPoints() + 3);
+            } else {
+                // Draw
+                homeStats.setRankingPoints(homeStats.getRankingPoints() + 1);
+                awayStats.setRankingPoints(awayStats.getRankingPoints() + 1);
+            }
+
+            // Update clean sheets
+            if (awayScore == 0) {
+                homeStats.setCleanSheetNumber(homeStats.getCleanSheetNumber() + 1);
+            }
+            if (homeScore == 0) {
+                awayStats.setCleanSheetNumber(awayStats.getCleanSheetNumber() + 1);
+            }
+        }
+
+        // Calculate difference goals for all clubs
+        for (ClubStatistics stats : clubStatsMap.values()) {
+            stats.setDifferenceGoals(stats.getScoredGoals() - stats.getConcededGoals());
+        }
+
+        // Convert map to list
+        List<ClubStatistics> result = new ArrayList<>(clubStatsMap.values());
+
+        // Sort the list if required
+        if (hasToBeClassified) {
+            result.sort((a, b) -> {
+                // 1. Ranking points (descending)
+                int pointsComparison = Integer.compare(b.getRankingPoints(), a.getRankingPoints());
+                if (pointsComparison != 0) {
+                    return pointsComparison;
+                }
+
+                // 2. Difference goals (descending)
+                int diffGoalsComparison = Integer.compare(b.getDifferenceGoals(), a.getDifferenceGoals());
+                if (diffGoalsComparison != 0) {
+                    return diffGoalsComparison;
+                }
+
+                // 3. Clean sheets (descending)
+                return Integer.compare(b.getCleanSheetNumber(), a.getCleanSheetNumber());
+            });
+        } else {
+            // Sort by club name (ascending)
+            result.sort(Comparator.comparing(stats -> stats.getClub().getName()));
+        }
+
+        return result;
     }
 }

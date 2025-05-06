@@ -9,6 +9,7 @@ import hei.school.prog3.exception.PlayerAlreadyAttachedException;
 import hei.school.prog3.exception.PlayerInformationMismatchException;
 import hei.school.prog3.exception.ResourceNotFoundException;
 import hei.school.prog3.model.Club;
+import hei.school.prog3.model.ClubStatistics;
 import hei.school.prog3.model.Player;
 import hei.school.prog3.service.ClubService;
 import lombok.RequiredArgsConstructor;
@@ -168,7 +169,8 @@ public class ClubRestController {
     }
 
     @GetMapping("/clubs/statistics/{seasonYear}")
-    public ResponseEntity<List<ClubResponse>> getClubStatistics(@PathVariable int seasonYear, @RequestParam(defaultValue = "false") boolean hasToBeClassified) {
-        return null;
+    public ResponseEntity<List<ClubStatistics>> getClubStatistics(@PathVariable int seasonYear, @RequestParam(defaultValue = "false") boolean hasToBeClassified) {
+        List<ClubStatistics> statistics = clubService.getClubStatistics(seasonYear, hasToBeClassified);
+        return statistics.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(statistics);
     }
 }
