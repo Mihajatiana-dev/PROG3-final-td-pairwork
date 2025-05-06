@@ -23,9 +23,19 @@ public class MatchRestController {
     private final MatchService matchService;
 
     @PostMapping("/matchMaker/{seasonYear}")
-    public ResponseEntity<List<MatchMinimumInfo>> createMatch(@PathVariable int seasonYear) {
-        List<MatchMinimumInfo> matches = matchService.createAll(seasonYear);
-        return ResponseEntity.ok(matches);  
+    public ResponseEntity<?> createMatch(@PathVariable int seasonYear) {
+        try {
+            List<MatchMinimumInfo> matches = matchService.createAll(seasonYear);
+            return ResponseEntity.ok(matches);
+        } catch (IllegalArgumentException e) {
+            // Return 404 NOT_FOUND when season doesn't exist
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            // Return 400 BAD_REQUEST when season status is invalid
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
+        }
     }
 
     @GetMapping("/matches/{seasonYear}")
