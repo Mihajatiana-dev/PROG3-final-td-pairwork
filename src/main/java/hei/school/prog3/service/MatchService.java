@@ -82,11 +82,21 @@ public class MatchService {
                             goal.getOwnGoal()
                         );
 
-                        // Add to the appropriate list based on the club
-                        if (goal.getClubId().equals(match.getHomeClub().getId())) {
-                            homeScorers.add(scorer);
-                        } else if (goal.getClubId().equals(match.getAwayClub().getId())) {
-                            awayScorers.add(scorer);
+                        // For own goals, add the scorer to their own club's list, not the opponent's
+                        if (goal.getOwnGoal()) {
+                            // Add to the player's own club list
+                            if (player.getClub().getId().equals(match.getHomeClub().getId())) {
+                                homeScorers.add(scorer);
+                            } else if (player.getClub().getId().equals(match.getAwayClub().getId())) {
+                                awayScorers.add(scorer);
+                            }
+                        } else {
+                            // For regular goals, add to the club that the goal is attributed to
+                            if (goal.getClubId().equals(match.getHomeClub().getId())) {
+                                homeScorers.add(scorer);
+                            } else if (goal.getClubId().equals(match.getAwayClub().getId())) {
+                                awayScorers.add(scorer);
+                            }
                         }
                     }
                 }
@@ -227,11 +237,21 @@ public class MatchService {
                 scorer.setMinuteOfGoal(goal.getMinute());
                 scorer.setOwnGoal(goal.getOwnGoal());
 
-                // Add to appropriate list
-                if (goal.getClubId().equals(updatedMatch.getHomeClub().getId())) {
-                    homeScorers.add(scorer);
+                // For own goals, add the scorer to their own club's list, not the opponent's
+                if (goal.getOwnGoal()) {
+                    // Add to the player's own club list
+                    if (player.getClub().getId().equals(updatedMatch.getHomeClub().getId())) {
+                        homeScorers.add(scorer);
+                    } else if (player.getClub().getId().equals(updatedMatch.getAwayClub().getId())) {
+                        awayScorers.add(scorer);
+                    }
                 } else {
-                    awayScorers.add(scorer);
+                    // For regular goals, add to the club that the goal is attributed to
+                    if (goal.getClubId().equals(updatedMatch.getHomeClub().getId())) {
+                        homeScorers.add(scorer);
+                    } else if (goal.getClubId().equals(updatedMatch.getAwayClub().getId())) {
+                        awayScorers.add(scorer);
+                    }
                 }
             }
         }
