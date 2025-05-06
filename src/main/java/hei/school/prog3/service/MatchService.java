@@ -138,7 +138,53 @@ public class MatchService {
                 "Error: Failed to update match status. Please try again later.");
         }
 
-        // Convert
+        // Get all goals for the match
+        List<Goal> allGoals = goalDAO.findByMatchId(matchId);
+
+        // Convert goals to scorers and set them on the match
+        List<Scorer> homeScorers = new ArrayList<>();
+        List<Scorer> awayScorers = new ArrayList<>();
+
+        for (Goal goal : allGoals) {
+            // Get player information
+            Player player = playerDAO.findById(goal.getPlayerId());
+            if (player != null) {
+                // Create player minimum info
+                PlayerMinimumInfo playerInfo = new PlayerMinimumInfo();
+                playerInfo.setId(player.getId());
+                playerInfo.setName(player.getName());
+                playerInfo.setNumber(player.getNumber());
+
+                // Create scorer
+                Scorer scorer = new Scorer();
+                scorer.setPlayer(playerInfo);
+                scorer.setMinuteOfGoal(goal.getMinute());
+                scorer.setOwnGoal(goal.getOwnGoal());
+
+                // For own goals, add the scorer to their own club's list, not the opponent's
+                if (goal.getOwnGoal()) {
+                    // Add to the player's own club list
+                    if (player.getClub().getId().equals(updatedMatch.getHomeClub().getId())) {
+                        homeScorers.add(scorer);
+                    } else if (player.getClub().getId().equals(updatedMatch.getAwayClub().getId())) {
+                        awayScorers.add(scorer);
+                    }
+                } else {
+                    // For regular goals, add to the club that the goal is attributed to
+                    if (goal.getClubId().equals(updatedMatch.getHomeClub().getId())) {
+                        homeScorers.add(scorer);
+                    } else if (goal.getClubId().equals(updatedMatch.getAwayClub().getId())) {
+                        awayScorers.add(scorer);
+                    }
+                }
+            }
+        }
+
+        // Set scorers on the match
+        updatedMatch.setHomeScorers(homeScorers);
+        updatedMatch.setAwayScorers(awayScorers);
+
+        // Convert and return
         return matchConverter.convert(updatedMatch);
     }
 
