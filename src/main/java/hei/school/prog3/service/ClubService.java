@@ -250,7 +250,8 @@ public class ClubService {
 
         // Calculate difference goals for all clubs
         for (ClubStatistics stats : clubStatsMap.values()) {
-            stats.setDifferenceGoals(stats.getScoredGoals() - stats.getConcededGoals());
+            // Use Math.abs to ensure differenceGoals is always positive
+            stats.setDifferenceGoals(Math.abs(stats.getScoredGoals() - stats.getConcededGoals()));
         }
 
         // Convert map to list
