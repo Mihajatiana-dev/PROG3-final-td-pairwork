@@ -19,6 +19,7 @@ import hei.school.prog3.model.Match;
 import hei.school.prog3.model.MatchClub;
 import hei.school.prog3.model.MatchMinimumInfo;
 import hei.school.prog3.model.Player;
+import hei.school.prog3.model.Scorer;
 import hei.school.prog3.model.enums.MatchStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -175,14 +176,36 @@ public class ClubService {
                 continue;
             }
 
-            // Get scores
+            // Get scores for ranking points calculation
             int homeScore = match.getClubPlayingHome().getClubScore() != null ? match.getClubPlayingHome().getClubScore().getScore() : 0;
             int awayScore = match.getClubPlayingAway().getClubScore() != null ? match.getClubPlayingAway().getClubScore().getScore() : 0;
 
+            // Count goals scored by club players (excluding own goals)
+            int homeScoredGoals = 0;
+            int awayScoredGoals = 0;
+
+            // Count home team's scored goals (excluding own goals)
+            if (match.getClubPlayingHome().getClubScore() != null && match.getClubPlayingHome().getClubScore().getScorers() != null) {
+                for (Scorer scorer : match.getClubPlayingHome().getClubScore().getScorers()) {
+                    if (scorer.getOwnGoal() == null || !scorer.getOwnGoal()) {
+                        homeScoredGoals++;
+                    }
+                }
+            }
+
+            // Count away team's scored goals (excluding own goals)
+            if (match.getClubPlayingAway().getClubScore() != null && match.getClubPlayingAway().getClubScore().getScorers() != null) {
+                for (Scorer scorer : match.getClubPlayingAway().getClubScore().getScorers()) {
+                    if (scorer.getOwnGoal() == null || !scorer.getOwnGoal()) {
+                        awayScoredGoals++;
+                    }
+                }
+            }
+
             // Update scored and conceded goals
-            homeStats.setScoredGoals(homeStats.getScoredGoals() + homeScore);
+            homeStats.setScoredGoals(homeStats.getScoredGoals() + homeScoredGoals);
             homeStats.setConcededGoals(homeStats.getConcededGoals() + awayScore);
-            awayStats.setScoredGoals(awayStats.getScoredGoals() + awayScore);
+            awayStats.setScoredGoals(awayStats.getScoredGoals() + awayScoredGoals);
             awayStats.setConcededGoals(awayStats.getConcededGoals() + homeScore);
 
             // Update ranking points
