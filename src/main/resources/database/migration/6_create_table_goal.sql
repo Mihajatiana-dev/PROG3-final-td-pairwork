@@ -6,5 +6,5 @@ CREATE TABLE goal
     match_id  UUID    NOT NULL REFERENCES match (match_id),
     minute    INTEGER NOT NULL,
     own_goal  BOOLEAN          DEFAULT FALSE,
-    CHECK ( minute >= 90 )
+    CHECK (minute BETWEEN 1 AND 90)
 )
