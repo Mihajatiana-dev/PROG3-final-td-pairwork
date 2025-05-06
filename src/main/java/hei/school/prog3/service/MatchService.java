@@ -171,6 +171,13 @@ public class MatchService {
         // Process each goal
         List<Goal> goals = new ArrayList<>();
         for (AddGoal goalRequest : goalsToAdd) {
+            // Validate minuteOfGoal is between 1 and 90
+            Integer minuteOfGoal = goalRequest.getMinuteOfGoal();
+            if (minuteOfGoal == null || minuteOfGoal < 1 || minuteOfGoal > 90) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                    "Error: Invalid minute of goal. The minute of goal must be between 1 and 90 inclusive. Provided value: " + minuteOfGoal);
+            }
+
             // Validate club is participating in the match
             String clubId = goalRequest.getClubId();
             if (!isClubParticipatingInMatch(match, clubId)) {
