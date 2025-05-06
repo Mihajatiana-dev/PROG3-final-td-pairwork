@@ -25,7 +25,7 @@ public class MatchRestController {
     @PostMapping("/matchMaker/{seasonYear}")
     public ResponseEntity<List<MatchMinimumInfo>> createMatch(@PathVariable int seasonYear) {
         List<MatchMinimumInfo> matches = matchService.createAll(seasonYear);
-        return ResponseEntity.ok(matches);
+        return ResponseEntity.ok(matches);  
     }
 
     @GetMapping("/matches/{seasonYear}")
