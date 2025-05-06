@@ -56,6 +56,47 @@ public class MatchService {
                 page,
                 size);
 
+        // For matches that have started or finished, retrieve and set scorer information
+        for (Match match : matchesWithInfo) {
+            if (match.getActualStatus() == MatchStatus.STARTED || match.getActualStatus() == MatchStatus.FINISHED) {
+                // Retrieve goals for the match
+                List<Goal> goals = goalDAO.findByMatchId(match.getId());
+
+                // Separate goals by home and away club
+                List<Scorer> homeScorers = new ArrayList<>();
+                List<Scorer> awayScorers = new ArrayList<>();
+
+                for (Goal goal : goals) {
+                    // Create a Scorer object from the Goal
+                    Player player = playerDAO.findById(goal.getPlayerId());
+                    if (player != null) {
+                        PlayerMinimumInfo playerInfo = new PlayerMinimumInfo(
+                            player.getId(),
+                            player.getName(),
+                            player.getNumber()
+                        );
+
+                        Scorer scorer = new Scorer(
+                            playerInfo,
+                            goal.getMinute(),
+                            goal.getOwnGoal()
+                        );
+
+                        // Add to the appropriate list based on the club
+                        if (goal.getClubId().equals(match.getHomeClub().getId())) {
+                            homeScorers.add(scorer);
+                        } else if (goal.getClubId().equals(match.getAwayClub().getId())) {
+                            awayScorers.add(scorer);
+                        }
+                    }
+                }
+
+                // Set the scorers on the match
+                match.setHomeScorers(homeScorers);
+                match.setAwayScorers(awayScorers);
+            }
+        }
+
         // convert
         return matchConverter.convertAll(matchesWithInfo);
     }

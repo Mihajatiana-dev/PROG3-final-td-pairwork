@@ -17,16 +17,22 @@ public class MatchConverter {
         match.setMatchDatetime(matchWithInfo.getMatchDatetime());
         match.setActualStatus(matchWithInfo.getActualStatus());
 
-        // Conversion du club domicile
+        // Conversion du club domicile with actual score and scorers
         MatchClub homeMatchClub = new MatchClub();
         homeMatchClub.setClub(convertToClubMinimumInfo(matchWithInfo.getHomeClub()));
-        homeMatchClub.setClubScore(createEmptyClubScore()); // Score vide par défaut
+        ClubScore homeClubScore = new ClubScore();
+        homeClubScore.setScore(matchWithInfo.getHomeScore() != null ? matchWithInfo.getHomeScore() : 0);
+        homeClubScore.setScorers(matchWithInfo.getHomeScorers() != null ? matchWithInfo.getHomeScorers() : Collections.emptyList());
+        homeMatchClub.setClubScore(homeClubScore);
         match.setClubPlayingHome(homeMatchClub);
 
-        // Conversion du club extérieur
+        // Conversion du club extérieur with actual score and scorers
         MatchClub awayMatchClub = new MatchClub();
         awayMatchClub.setClub(convertToClubMinimumInfo(matchWithInfo.getAwayClub()));
-        awayMatchClub.setClubScore(createEmptyClubScore()); // Score vide par défaut
+        ClubScore awayClubScore = new ClubScore();
+        awayClubScore.setScore(matchWithInfo.getAwayScore() != null ? matchWithInfo.getAwayScore() : 0);
+        awayClubScore.setScorers(matchWithInfo.getAwayScorers() != null ? matchWithInfo.getAwayScorers() : Collections.emptyList());
+        awayMatchClub.setClubScore(awayClubScore);
         match.setClubPlayingAway(awayMatchClub);
 
         return match;
@@ -60,8 +66,23 @@ public class MatchConverter {
         match.setMatchDatetime(matchWithInfo.getMatchDatetime());
         match.setActualStatus(matchWithInfo.getActualStatus());
 
-        match.setClubPlayingHome(createMatchClub(matchWithInfo.getHomeClub()));
-        match.setClubPlayingAway(createMatchClub(matchWithInfo.getAwayClub()));
+        // Create MatchClub for home club with actual score and scorers
+        MatchClub homeMatchClub = new MatchClub();
+        homeMatchClub.setClub(convertToClubMinimumInfo(matchWithInfo.getHomeClub()));
+        ClubScore homeClubScore = new ClubScore();
+        homeClubScore.setScore(matchWithInfo.getHomeScore() != null ? matchWithInfo.getHomeScore() : 0);
+        homeClubScore.setScorers(matchWithInfo.getHomeScorers() != null ? matchWithInfo.getHomeScorers() : Collections.emptyList());
+        homeMatchClub.setClubScore(homeClubScore);
+        match.setClubPlayingHome(homeMatchClub);
+
+        // Create MatchClub for away club with actual score and scorers
+        MatchClub awayMatchClub = new MatchClub();
+        awayMatchClub.setClub(convertToClubMinimumInfo(matchWithInfo.getAwayClub()));
+        ClubScore awayClubScore = new ClubScore();
+        awayClubScore.setScore(matchWithInfo.getAwayScore() != null ? matchWithInfo.getAwayScore() : 0);
+        awayClubScore.setScorers(matchWithInfo.getAwayScorers() != null ? matchWithInfo.getAwayScorers() : Collections.emptyList());
+        awayMatchClub.setClubScore(awayClubScore);
+        match.setClubPlayingAway(awayMatchClub);
 
         return match;
     }

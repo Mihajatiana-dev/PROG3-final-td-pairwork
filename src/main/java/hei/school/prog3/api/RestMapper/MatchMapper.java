@@ -54,6 +54,16 @@ public class MatchMapper {
         season.setStatus(SeasonStatus.valueOf(rs.getString("season_status")));
         match.setSeason(season);
 
+        // Match Score
+        try {
+            match.setHomeScore(rs.getInt("home_score"));
+            match.setAwayScore(rs.getInt("away_score"));
+        } catch (SQLException e) {
+            // If the columns don't exist, set scores to null
+            match.setHomeScore(null);
+            match.setAwayScore(null);
+        }
+
         return match;
     }
 }
