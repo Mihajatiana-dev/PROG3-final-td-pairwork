@@ -180,7 +180,7 @@ public class ClubService {
             int homeScore = match.getClubPlayingHome().getClubScore() != null ? match.getClubPlayingHome().getClubScore().getScore() : 0;
             int awayScore = match.getClubPlayingAway().getClubScore() != null ? match.getClubPlayingAway().getClubScore().getScore() : 0;
 
-            // Count goals scored by club players (excluding own goals)
+            // Count goals scored by club players (including own goals from opponent players)
             int homeScoredGoals = 0;
             int awayScoredGoals = 0;
 
@@ -197,6 +197,24 @@ public class ClubService {
             if (match.getClubPlayingAway().getClubScore() != null && match.getClubPlayingAway().getClubScore().getScorers() != null) {
                 for (Scorer scorer : match.getClubPlayingAway().getClubScore().getScorers()) {
                     if (scorer.getOwnGoal() == null || !scorer.getOwnGoal()) {
+                        awayScoredGoals++;
+                    }
+                }
+            }
+
+            // Count own goals by away team players and add them to home team's scored goals
+            if (match.getClubPlayingAway().getClubScore() != null && match.getClubPlayingAway().getClubScore().getScorers() != null) {
+                for (Scorer scorer : match.getClubPlayingAway().getClubScore().getScorers()) {
+                    if (scorer.getOwnGoal() != null && scorer.getOwnGoal()) {
+                        homeScoredGoals++;
+                    }
+                }
+            }
+
+            // Count own goals by home team players and add them to away team's scored goals
+            if (match.getClubPlayingHome().getClubScore() != null && match.getClubPlayingHome().getClubScore().getScorers() != null) {
+                for (Scorer scorer : match.getClubPlayingHome().getClubScore().getScorers()) {
+                    if (scorer.getOwnGoal() != null && scorer.getOwnGoal()) {
                         awayScoredGoals++;
                     }
                 }
