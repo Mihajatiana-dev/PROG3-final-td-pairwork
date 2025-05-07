@@ -26,11 +26,11 @@ public class ClubDAO implements GenericOperations<Club> {
     public Club findClubByPlayerId(String playerId) {
 
         String query = """
-        SELECT c.club_id, c.club_name, c.acronym, c.year_creation, c.stadium, c.coach_id
-        FROM club c
-        JOIN player p ON c.club_id = p.club_id
-        WHERE p.player_id = ?::uuid
-        """;
+                SELECT c.club_id, c.club_name, c.acronym, c.year_creation, c.stadium, c.coach_id
+                FROM club c
+                JOIN player p ON c.club_id = p.club_id
+                WHERE p.player_id = ?::uuid
+                """;
 
         try (Connection connection = dbConnection.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -291,5 +291,142 @@ public class ClubDAO implements GenericOperations<Club> {
         } catch (SQLException e) {
             throw new RuntimeException("Failed to replace club players", e);
         }
+    }
+
+    public List<Club> findAllClubs() {
+        String sql = """
+                SELECT c.club_id, c.club_name, c.acronym, c.year_creation, c.stadium, 
+                       ch.coach_id, ch.coach_name, ch.nationality as coach_nationality
+                FROM club c
+                LEFT JOIN coach ch ON c.coach_id = ch.coach_id
+                """;
+
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet rs = statement.executeQuery()) {
+
+            List<Club> clubs = new ArrayList<>();
+            while (rs.next()) {
+                Club club = new Club(
+                        rs.getString("club_id"),
+                        rs.getString("club_name"),
+                        rs.getString("acronym"),
+                        rs.getInt("year_creation"),
+                        rs.getString("stadium")
+                );
+
+                if (rs.getString("coach_id") != null) {
+                    Coach coach = new Coach(
+                            rs.getString("coach_id"),
+                            rs.getString("coach_name"),
+                            rs.getString("coach_nationality")
+                    );
+                    club.setCoach(coach);
+                }
+
+                clubs.add(club);
+            }
+            return clubs;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to fetch clubs", e);
+        }
+    }
+
+    public Integer getScoredGoals(String clubId) {
+        String sql = """
+            SELECT COALESCE(SUM(
+                CASE 
+                    WHEN m.home_club_id = ? THEN ms.home_score
+                    WHEN m.away_club_id = ? THEN ms.away_score
+                    ELSE 0
+                END
+            ), 0)
+            FROM match m
+            JOIN match_score ms ON m.match_id = ms.match_id
+            WHERE (m.home_club_id = ? OR m.away_club_id = ?)
+            AND m.status = 'FINISHED'
+            """;
+
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            UUID clubUuid = UUID.fromString(clubId);
+            statement.setObject(1, clubUuid, Types.OTHER);
+            statement.setObject(2, clubUuid, Types.OTHER);
+            statement.setObject(3, clubUuid, Types.OTHER);
+            statement.setObject(4, clubUuid, Types.OTHER);
+
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to get scored goals", e);
+        }
+        return 0;
+    }
+
+    public Integer getConcededGoals(String clubId) {
+        String sql = """
+            SELECT COALESCE(SUM(
+                CASE
+                    WHEN m.home_club_id = ? THEN ms.away_score
+                    WHEN m.away_club_id = ? THEN ms.home_score
+                    ELSE 0
+                END
+            ), 0)
+            FROM match m
+            JOIN match_score ms ON m.match_id = ms.match_id
+            WHERE (m.home_club_id = ? OR m.away_club_id = ?)
+            AND m.status = 'FINISHED'
+            """;
+
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            UUID clubUuid = UUID.fromString(clubId);
+            statement.setObject(1, clubUuid, Types.OTHER);
+            statement.setObject(2, clubUuid, Types.OTHER);
+            statement.setObject(3, clubUuid, Types.OTHER);
+            statement.setObject(4, clubUuid, Types.OTHER);
+
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to get conceded goals", e);
+        }
+        return 0;
+    }
+
+    public Integer getCleanSheetNumber(String clubId) {
+        String sql = """
+            SELECT COUNT(*)
+            FROM match m
+            JOIN match_score ms ON m.match_id = ms.match_id
+            WHERE (m.home_club_id = ? AND ms.away_score = 0)
+               OR (m.away_club_id = ? AND ms.home_score = 0)
+            AND m.status = 'FINISHED'
+            """;
+
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            UUID clubUuid = UUID.fromString(clubId);
+            statement.setObject(1, clubUuid, Types.OTHER);
+            statement.setObject(2, clubUuid, Types.OTHER);
+
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to get clean sheet number", e);
+        }
+        return 0;
     }
 }

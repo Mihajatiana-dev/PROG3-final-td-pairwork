@@ -6,12 +6,10 @@ import hei.school.prog3.model.Coach;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -97,6 +95,29 @@ public class CoachDAO implements GenericOperations<Coach> {
             }
         } catch (SQLException e) {
             throw new RuntimeException("Failed to find coach by name", e);
+        }
+        return null;
+    }
+
+    public Coach findCoachById(String coachId) {
+        String sql = "SELECT coach_name, nationality FROM coach WHERE coach_id = ?";
+
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setObject(1, UUID.fromString(coachId), Types.OTHER);
+
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return new Coach(
+                            coachId,
+                            rs.getString("coach_name"),
+                            rs.getString("nationality")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to fetch coach", e);
         }
         return null;
     }

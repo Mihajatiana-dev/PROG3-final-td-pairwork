@@ -3,23 +3,16 @@ package hei.school.prog3.service;
 import hei.school.prog3.api.RestMapper.ClubRestMapper;
 import hei.school.prog3.api.RestMapper.PlayerRestMapper;
 import hei.school.prog3.api.dto.request.ClubSimpleRequest;
+import hei.school.prog3.api.dto.request.CoachSimpleRequest;
 import hei.school.prog3.api.dto.response.ClubResponse;
 import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
 import hei.school.prog3.dao.operations.ClubDAO;
+import hei.school.prog3.dao.operations.GoalDAO;
 import hei.school.prog3.dao.operations.PlayerDAO;
 import hei.school.prog3.exception.PlayerAlreadyAttachedException;
 import hei.school.prog3.exception.PlayerInformationMismatchException;
 import hei.school.prog3.exception.ResourceNotFoundException;
-import hei.school.prog3.model.Club;
-import hei.school.prog3.model.ClubMinimumInfo;
-import hei.school.prog3.model.ClubScore;
-import hei.school.prog3.model.ClubStatistics;
-import hei.school.prog3.model.FilterCriteria;
-import hei.school.prog3.model.Match;
-import hei.school.prog3.model.MatchClub;
-import hei.school.prog3.model.MatchMinimumInfo;
-import hei.school.prog3.model.Player;
-import hei.school.prog3.model.Scorer;
+import hei.school.prog3.model.*;
 import hei.school.prog3.model.enums.MatchStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,6 +27,7 @@ public class ClubService {
     private final PlayerDAO playerDAO;
     private final ClubRestMapper clubRestMapper;
     private final MatchService matchService;
+    private final GoalDAO goalDAO;
 
     public List<Club> getAllClubResponses(int page, int size) {
         return clubDAO.showAll(page, size);
@@ -42,10 +36,6 @@ public class ClubService {
     public List<Club> saveAllClubResponses(List<Club> clubToSave) {
         return clubDAO.saveAll(clubToSave);
     }
-
-//    public List<PlayerWithoutClub> getPlayers(String clubId) {
-//        return clubDAO.getActualClubPlayers(clubId);
-//    }
 
     public Club getClubWithPlayers(String clubId) {
         return clubDAO.getClubWithPlayers(clubId);
@@ -281,5 +271,43 @@ public class ClubService {
         }
 
         return result;
+    }
+
+    public List<ClubToFetch> getAllClubsWithStats() {
+        List<Club> clubs = clubDAO.findAllClubs();
+        return clubs.stream()
+                .map(club -> {
+                    ClubToFetch clubToFetch = new ClubToFetch();
+
+                    // Convert club to ClubSimpleRequest
+                    ClubSimpleRequest clubSimple = new ClubSimpleRequest();
+                    clubSimple.setId(club.getId());
+                    clubSimple.setName(club.getName());
+                    clubSimple.setAcronym(club.getAcronym());
+                    clubSimple.setYearCreation(club.getYearCreation());
+                    clubSimple.setStadium(club.getStadium());
+
+                    // Add coach if exist
+                    if (club.getCoach() != null) {
+                        CoachSimpleRequest coachSimple = new CoachSimpleRequest();
+                        coachSimple.setName(club.getCoach().getName());
+                        coachSimple.setNationality(club.getCoach().getNationality());
+                        clubSimple.setCoach(coachSimple);
+                    }
+
+                    clubToFetch.setClub(clubSimple);
+
+                    // get stats
+                    int scoredGoals = clubDAO.getScoredGoals(club.getId());
+                    int concededGoals = clubDAO.getConcededGoals(club.getId());
+
+                    clubToFetch.setScoredGoals(scoredGoals);
+                    clubToFetch.setConcededGoals(concededGoals);
+                    clubToFetch.setDifferenceGoals(scoredGoals - concededGoals);
+                    clubToFetch.setCleanSheetNumber(clubDAO.getCleanSheetNumber(club.getId()));
+
+                    return clubToFetch;
+                })
+                .toList();
     }
 }

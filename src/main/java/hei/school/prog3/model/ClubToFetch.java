@@ -10,9 +10,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClubsToFetch {
+public class ClubToFetch {
     private ClubSimpleRequest club;
-    private Integer rankingPoints;
     private Integer scoredGoals;
     private Integer concededGoals;
     private Integer differenceGoals;

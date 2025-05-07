@@ -8,10 +8,7 @@ import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
 import hei.school.prog3.exception.PlayerAlreadyAttachedException;
 import hei.school.prog3.exception.PlayerInformationMismatchException;
 import hei.school.prog3.exception.ResourceNotFoundException;
-import hei.school.prog3.model.Club;
-import hei.school.prog3.model.ClubStatistics;
-import hei.school.prog3.model.ClubStatisticsRest;
-import hei.school.prog3.model.Player;
+import hei.school.prog3.model.*;
 import hei.school.prog3.service.ClubService;
 import hei.school.prog3.service.TransfertService;
 import lombok.RequiredArgsConstructor;
@@ -190,5 +187,11 @@ public class ClubRestController {
                 .map(clubRestMapper::toClubStatisticsRest)
                 .collect(Collectors.toList());
         return statisticsRest.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(statisticsRest);
+    }
+
+    @GetMapping("/championship/clubs")
+    public ResponseEntity<List<ClubToFetch>> getAllChampionshipClubs() {
+        List<ClubToFetch> clubs = clubService.getAllClubsWithStats();
+        return ResponseEntity.ok(clubs);
     }
 }
