@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,5 +21,9 @@ public class TransfertService {
         transfert.setStatus(status);
         transfert.setTransfertDate(LocalDateTime.now());
         return transfertDAO.save(transfert);
+    }
+
+    public List<Transfert> getAllTransferts() {
+        return transfertDAO.findAll();
     }
 }

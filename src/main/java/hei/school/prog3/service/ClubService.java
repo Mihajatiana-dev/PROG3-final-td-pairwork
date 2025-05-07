@@ -68,10 +68,10 @@ public class ClubService {
             if (existingPlayer != null) {
                 // Check if all player information matches
                 if (!existingPlayer.getName().equals(player.getName()) ||
-                    !existingPlayer.getNumber().equals(player.getNumber()) ||
-                    !existingPlayer.getPosition().equals(player.getPosition()) ||
-                    !existingPlayer.getNationality().equals(player.getNationality()) ||
-                    !existingPlayer.getAge().equals(player.getAge())) {
+                        !existingPlayer.getNumber().equals(player.getNumber()) ||
+                        !existingPlayer.getPosition().equals(player.getPosition()) ||
+                        !existingPlayer.getNationality().equals(player.getNationality()) ||
+                        !existingPlayer.getAge().equals(player.getAge())) {
                     throw new PlayerInformationMismatchException("Player information for ID " + player.getId() + " does not match existing player information.");
                 }
             }
@@ -81,7 +81,7 @@ public class ClubService {
         return clubDAO.changePlayers(clubId, playersToChange);
     }
 
-    public Club verifyExistingCLub(String Id){
+    public Club verifyExistingCLub(String Id) {
         Club club = clubDAO.findById(Id);
         if (club == null || club.getId() == null) {
             throw new ResourceNotFoundException("Club with ID " + Id + " not found.");
@@ -104,10 +104,10 @@ public class ClubService {
             if (existingPlayer != null) {
                 // Check if all player information matches
                 if (!existingPlayer.getName().equals(player.getName()) ||
-                    !existingPlayer.getNumber().equals(player.getNumber()) ||
-                    !existingPlayer.getPosition().equals(player.getPosition()) ||
-                    !existingPlayer.getNationality().equals(player.getNationality()) ||
-                    !existingPlayer.getAge().equals(player.getAge())) {
+                        !existingPlayer.getNumber().equals(player.getNumber()) ||
+                        !existingPlayer.getPosition().equals(player.getPosition()) ||
+                        !existingPlayer.getNationality().equals(player.getNationality()) ||
+                        !existingPlayer.getAge().equals(player.getAge())) {
                     throw new PlayerInformationMismatchException("Player information for ID " + player.getId() + " does not match existing player information.");
                 }
             }
@@ -251,7 +251,7 @@ public class ClubService {
         // Calculate difference goals for all clubs
         for (ClubStatistics stats : clubStatsMap.values()) {
             // Use Math.abs to ensure differenceGoals is always positive
-            stats.setDifferenceGoals(Math.abs(stats.getScoredGoals() - stats.getConcededGoals()));
+            stats.setDifferenceGoals((stats.getScoredGoals() - stats.getConcededGoals()));
         }
 
         // Convert map to list
