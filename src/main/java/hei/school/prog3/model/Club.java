@@ -29,9 +29,18 @@ public class Club {
         this.coach = coach;
     }
 
+    public Club(String id, String name, String acronym, Integer yearCreation, String stadium) {
+        this.id = id;
+        this.name = name;
+        this.acronym = acronym;
+        this.yearCreation = yearCreation;
+        this.stadium = stadium;
+    }
+
     public List<Player> getPlayers() {
         return this.playerList != null ? this.playerList : Collections.emptyList();
     }
+
     public Club(String id) {
         this.id = id;
     }

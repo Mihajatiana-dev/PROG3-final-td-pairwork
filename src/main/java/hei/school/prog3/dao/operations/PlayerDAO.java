@@ -101,9 +101,9 @@ public class PlayerDAO implements GenericOperations<Player> {
     @Override
     public Player findById(String Id) {
         String checkPlayerSql = """
-        SELECT *
-        FROM player
-        WHERE player_id = ?""";
+                SELECT *
+                FROM player
+                WHERE player_id = ?""";
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(checkPlayerSql)) {
@@ -121,11 +121,11 @@ public class PlayerDAO implements GenericOperations<Player> {
 
     public void attachPlayerToClub(String playerId, String clubId) {
         String sql = """
-        UPDATE player 
-        SET club_id = ?::uuid 
-        WHERE player_id = ?::uuid
-        AND (club_id IS NULL OR club_id = ?::uuid)
-        """;
+                UPDATE player 
+                SET club_id = ?::uuid 
+                WHERE player_id = ?::uuid
+                AND (club_id IS NULL OR club_id = ?::uuid)
+                """;
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement pstm = connection.prepareStatement(sql)) {
@@ -146,10 +146,10 @@ public class PlayerDAO implements GenericOperations<Player> {
         List<Player> savedPlayers = new ArrayList<>();
 
         String sql = """
-        INSERT INTO player (player_id, player_name, number, position, nationality, age, club_id)
-        VALUES (?, ?, ?, ?::position_enum, ?, ?, ?::uuid)
-        RETURNING player_id, player_name, number, position, nationality, age, club_id
-        """;
+                INSERT INTO player (player_id, player_name, number, position, nationality, age, club_id)
+                VALUES (?, ?, ?, ?::position_enum, ?, ?, ?::uuid)
+                RETURNING player_id, player_name, number, position, nationality, age, club_id
+                """;
 
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
@@ -303,5 +303,109 @@ public class PlayerDAO implements GenericOperations<Player> {
         } catch (SQLException e) {
             throw new RuntimeException("Failed to get playing time", e);
         }
+    }
+
+    public List<Player> findAllPlayers() {
+        String sql = """
+                SELECT p.player_id, p.player_name, p.number, p.position, p.nationality, p.age,
+                       c.club_id, c.club_name, c.acronym, c.year_creation, c.stadium
+                FROM player p
+                LEFT JOIN club c ON p.club_id = c.club_id
+                """;
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet rs = statement.executeQuery()) {
+
+            List<Player> players = new ArrayList<>();
+            while (rs.next()) {
+                Player player = new Player(
+                        rs.getString("player_id"),
+                        rs.getString("player_name"),
+                        rs.getInt("number"),
+                        PlayerPosition.valueOf(rs.getString("position")),
+                        rs.getString("nationality"),
+                        rs.getInt("age")
+                );
+
+                if (rs.getString("club_id") != null) {
+                    Club club = new Club(
+                            rs.getString("club_id"),
+                            rs.getString("club_name"),
+                            rs.getString("acronym"),
+                            rs.getInt("year_creation"),
+                            rs.getString("stadium")
+                    );
+                    player.setClub(club);
+                }
+
+                players.add(player);
+            }
+            return players;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to fetch players", e);
+        }
+    }
+
+    public Integer getScoredGoals(String playerId) {
+        String sql = """
+                SELECT COUNT(*)
+                FROM goal g
+                WHERE g.player_id = ?
+                AND g.own_goal = false
+                """;
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setObject(1, UUID.fromString(playerId), Types.OTHER);
+
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to get scored goals", e);
+        }
+        return 0;
+    }
+
+    public PlayingTime getTotalPlayingTime(String playerId) {
+        String sql = """
+                SELECT SUM(value), duration_unit
+                FROM playing_time
+                WHERE player_id = ?
+                GROUP BY duration_unit
+                """;
+
+        double totalMinutes = 0;
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setObject(1, UUID.fromString(playerId), Types.OTHER);
+
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    double value = rs.getDouble(1);
+                    String unit = rs.getString(2);
+
+                    // convert value to minute
+                    switch (DurationUnit.valueOf(unit)) {
+                        case SECOND -> totalMinutes += value / 60;
+                        case MINUTE -> totalMinutes += value;
+                        case HOUR -> totalMinutes += value * 60;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to get playing time", e);
+        }
+
+        PlayingTime playingTime = new PlayingTime();
+        playingTime.setValue(totalMinutes);
+        playingTime.setDurationUnit(DurationUnit.MINUTE);
+        return playingTime;
     }
 }

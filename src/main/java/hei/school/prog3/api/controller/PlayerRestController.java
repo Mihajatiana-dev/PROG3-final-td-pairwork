@@ -1,6 +1,7 @@
 package hei.school.prog3.api.controller;
 
 import hei.school.prog3.api.RestMapper.PlayerRestMapper;
+import hei.school.prog3.model.PlayerToFetch;
 import hei.school.prog3.api.dto.response.PlayerResponse;
 import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
 import hei.school.prog3.model.FilterCriteria;
@@ -80,5 +81,11 @@ public class PlayerRestController {
 
         PlayerStatistics stats = playerService.getPlayerStatistics(id, seasonYear);
         return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/championship/players")
+    public ResponseEntity<List<PlayerToFetch>> getAllChampionshipPlayers() {
+        List<PlayerToFetch> players = playerService.getAllPlayersWithStats();
+        return ResponseEntity.ok(players);
     }
 }
