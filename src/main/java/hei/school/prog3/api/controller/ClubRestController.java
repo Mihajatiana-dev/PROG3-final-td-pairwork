@@ -13,6 +13,7 @@ import hei.school.prog3.model.ClubStatistics;
 import hei.school.prog3.model.ClubStatisticsRest;
 import hei.school.prog3.model.Player;
 import hei.school.prog3.service.ClubService;
+import hei.school.prog3.service.TransfertService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,7 @@ public class ClubRestController {
     private final ClubService clubService;
     private final ClubRestMapper clubRestMapper;
     private final PlayerRestMapper playerRestMapper;
+    private final TransfertService transfertService;
 
     @GetMapping("/clubs")
     public ResponseEntity<List<ClubResponse>> getAllClubs(
@@ -99,12 +101,26 @@ public class ClubRestController {
             if (playersToChange == null) {
                 return ResponseEntity.badRequest().build();
             }
-            //map into model
+
             List<Player> playerModel = playersToChange.stream()
                     .map(playerRestMapper::toModel)
                     .collect(Collectors.toList());
+
+            // Récupérer les joueurs actuels du club
+            Club club = clubService.getClubWithPlayers(id);
+            List<Player> currentPlayers = club.getPlayers();
+
+            // Marquer les joueurs actuels comme "out"
+            for (Player player : currentPlayers) {
+                transfertService.saveTransfert(player.getId(), id, "out");
+            }
+
+            // Ajouter les nouveaux joueurs et les marquer comme "in"
             List<Player> result = clubService.changePlayers(playerModel, id);
-            //map into dto for return
+            for (Player player : result) {
+                transfertService.saveTransfert(player.getId(), id, "in");
+            }
+
             List<PlayerWithoutClub> response = result.stream()
                     .map(playerRestMapper::toPlayerWithoutClub)
                     .collect(Collectors.toList());
@@ -113,13 +129,10 @@ public class ClubRestController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         } catch (PlayerAlreadyAttachedException e) {
-            // Player already attached to another club
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (ResourceNotFoundException e) {
-            // Club not found
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (PlayerInformationMismatchException e) {
-            // Player information doesn't match
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -132,7 +145,6 @@ public class ClubRestController {
             @RequestBody List<PlayerWithoutClub> players
     ) {
         try {
-            // Validate the UUID
             UUID.fromString(id);
 
             if (players == null || players.isEmpty()) {
@@ -143,9 +155,15 @@ public class ClubRestController {
                     .map(playerRestMapper::toModel)
                     .collect(Collectors.toList());
 
-            List<Player> updatedPlayers = clubService.addPlayerIntoCLub(id, playerEntities);
+            // Ajouter uniquement les nouveaux joueurs
+            List<Player> addedPlayers = clubService.addPlayerIntoCLub(id, playerEntities);
 
-            List<PlayerWithoutClub> result = updatedPlayers.stream()
+            // Enregistrer les transferts uniquement pour les joueurs ajoutés
+            for (Player player : playerEntities) {
+                transfertService.saveTransfert(player.getId(), id, "in");
+            }
+
+            List<PlayerWithoutClub> result = addedPlayers.stream()
                     .map(playerRestMapper::toPlayerWithoutClub)
                     .collect(Collectors.toList());
 
@@ -153,16 +171,12 @@ public class ClubRestController {
                     ? ResponseEntity.badRequest().build()
                     : ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
-            // Invalid UUID format
             return ResponseEntity.badRequest().build();
         } catch (PlayerAlreadyAttachedException e) {
-            // Player already attached to another club
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (ResourceNotFoundException e) {
-            // Club not found
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (PlayerInformationMismatchException e) {
-            // Player information doesn't match
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
