@@ -194,4 +194,10 @@ public class ClubRestController {
         List<ClubToFetch> clubs = clubService.getAllClubsWithStats();
         return ResponseEntity.ok(clubs);
     }
+
+    @GetMapping("/championship/differenceGoalsMedian")
+    public ResponseEntity<Integer> getDifferenceGoalsMedian() {
+        int median = clubService.calculateDifferenceGoalsMedian();
+        return ResponseEntity.ok(median);
+    }
 }

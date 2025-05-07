@@ -334,18 +334,18 @@ public class ClubDAO implements GenericOperations<Club> {
 
     public Integer getScoredGoals(String clubId) {
         String sql = """
-            SELECT COALESCE(SUM(
-                CASE 
-                    WHEN m.home_club_id = ? THEN ms.home_score
-                    WHEN m.away_club_id = ? THEN ms.away_score
-                    ELSE 0
-                END
-            ), 0)
-            FROM match m
-            JOIN match_score ms ON m.match_id = ms.match_id
-            WHERE (m.home_club_id = ? OR m.away_club_id = ?)
-            AND m.status = 'FINISHED'
-            """;
+                SELECT COALESCE(SUM(
+                    CASE 
+                        WHEN m.home_club_id = ? THEN ms.home_score
+                        WHEN m.away_club_id = ? THEN ms.away_score
+                        ELSE 0
+                    END
+                ), 0)
+                FROM match m
+                JOIN match_score ms ON m.match_id = ms.match_id
+                WHERE (m.home_club_id = ? OR m.away_club_id = ?)
+                AND m.status = 'FINISHED'
+                """;
 
         try (Connection connection = dbConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -369,18 +369,18 @@ public class ClubDAO implements GenericOperations<Club> {
 
     public Integer getConcededGoals(String clubId) {
         String sql = """
-            SELECT COALESCE(SUM(
-                CASE
-                    WHEN m.home_club_id = ? THEN ms.away_score
-                    WHEN m.away_club_id = ? THEN ms.home_score
-                    ELSE 0
-                END
-            ), 0)
-            FROM match m
-            JOIN match_score ms ON m.match_id = ms.match_id
-            WHERE (m.home_club_id = ? OR m.away_club_id = ?)
-            AND m.status = 'FINISHED'
-            """;
+                SELECT COALESCE(SUM(
+                    CASE
+                        WHEN m.home_club_id = ? THEN ms.away_score
+                        WHEN m.away_club_id = ? THEN ms.home_score
+                        ELSE 0
+                    END
+                ), 0)
+                FROM match m
+                JOIN match_score ms ON m.match_id = ms.match_id
+                WHERE (m.home_club_id = ? OR m.away_club_id = ?)
+                AND m.status = 'FINISHED'
+                """;
 
         try (Connection connection = dbConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -404,13 +404,13 @@ public class ClubDAO implements GenericOperations<Club> {
 
     public Integer getCleanSheetNumber(String clubId) {
         String sql = """
-            SELECT COUNT(*)
-            FROM match m
-            JOIN match_score ms ON m.match_id = ms.match_id
-            WHERE (m.home_club_id = ? AND ms.away_score = 0)
-               OR (m.away_club_id = ? AND ms.home_score = 0)
-            AND m.status = 'FINISHED'
-            """;
+                SELECT COUNT(*)
+                FROM match m
+                JOIN match_score ms ON m.match_id = ms.match_id
+                WHERE (m.home_club_id = ? AND ms.away_score = 0)
+                   OR (m.away_club_id = ? AND ms.home_score = 0)
+                AND m.status = 'FINISHED'
+                """;
 
         try (Connection connection = dbConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -428,5 +428,41 @@ public class ClubDAO implements GenericOperations<Club> {
             throw new RuntimeException("Failed to get clean sheet number", e);
         }
         return 0;
+    }
+
+    public List<Integer> getAllClubsDifferenceGoals() {
+        String sql = """
+                SELECT c.club_id,
+                       SUM(CASE 
+                           WHEN m.home_club_id = c.club_id THEN ms.home_score
+                           WHEN m.away_club_id = c.club_id THEN ms.away_score
+                           ELSE 0
+                       END) AS scored_goals,
+                       SUM(CASE 
+                           WHEN m.home_club_id = c.club_id THEN ms.away_score
+                           WHEN m.away_club_id = c.club_id THEN ms.home_score
+                           ELSE 0
+                       END) AS conceded_goals
+                FROM club c
+                LEFT JOIN match m ON c.club_id = m.home_club_id OR c.club_id = m.away_club_id
+                LEFT JOIN match_score ms ON m.match_id = ms.match_id
+                WHERE m.status = 'FINISHED'
+                GROUP BY c.club_id
+                """;
+
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet rs = statement.executeQuery()) {
+
+            List<Integer> differences = new ArrayList<>();
+            while (rs.next()) {
+                int scored = rs.getInt("scored_goals");
+                int conceded = rs.getInt("conceded_goals");
+                differences.add(scored - conceded);
+            }
+            return differences;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to fetch clubs difference goals", e);
+        }
     }
 }

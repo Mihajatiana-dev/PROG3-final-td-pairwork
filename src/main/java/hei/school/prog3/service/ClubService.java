@@ -310,4 +310,20 @@ public class ClubService {
                 })
                 .toList();
     }
+
+    public int calculateDifferenceGoalsMedian() {
+        List<Integer> differences = clubDAO.getAllClubsDifferenceGoals();
+        differences.sort(Integer::compareTo);
+
+        int size = differences.size();
+        if (size == 0) {
+            return 0;
+        }
+
+        if (size % 2 == 1) {
+            return differences.get(size / 2);
+        } else {
+            return (differences.get(size / 2 - 1) + differences.get(size / 2)) / 2;
+        }
+    }
 }
