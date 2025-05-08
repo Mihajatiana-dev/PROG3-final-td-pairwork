@@ -1,10 +1,9 @@
 package hei.school.prog3.api.controller;
 
-import hei.school.prog3.api.RestMapper.ClubRestMapper;
-import hei.school.prog3.api.RestMapper.PlayerRestMapper;
-import hei.school.prog3.api.dto.request.ClubSimpleRequest;
-import hei.school.prog3.api.dto.response.ClubResponse;
-import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
+import hei.school.prog3.dto.ClubRest.*;
+import hei.school.prog3.dto.RestMapper.ClubRestMapper;
+import hei.school.prog3.dto.RestMapper.PlayerRestMapper;
+import hei.school.prog3.dto.PlayerRest.PlayerWithoutClub;
 import hei.school.prog3.exception.PlayerAlreadyAttachedException;
 import hei.school.prog3.exception.PlayerInformationMismatchException;
 import hei.school.prog3.exception.ResourceNotFoundException;
@@ -16,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;

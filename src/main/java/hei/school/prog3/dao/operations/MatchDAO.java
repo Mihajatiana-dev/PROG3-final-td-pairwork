@@ -1,7 +1,9 @@
 package hei.school.prog3.dao.operations;
 
-import hei.school.prog3.api.RestMapper.MatchConverter;
-import hei.school.prog3.api.RestMapper.MatchMapper;
+import hei.school.prog3.dto.MatchRest.MatchMinimumInfo;
+import hei.school.prog3.dto.Other.FilterCriteria;
+import hei.school.prog3.dto.RestMapper.MatchConverter;
+import hei.school.prog3.dto.RestMapper.MatchMapper;
 import hei.school.prog3.config.DbConnection;
 import hei.school.prog3.model.*;
 import hei.school.prog3.model.enums.MatchStatus;

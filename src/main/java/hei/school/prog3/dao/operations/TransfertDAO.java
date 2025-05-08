@@ -18,10 +18,10 @@ public class TransfertDAO {
 
     public Transfert save(Transfert transfert) {
         String sql = """
-            INSERT INTO transfert (transfert_id, player_id, club_id, status, transfert_date)
-            VALUES (?, ?, ?, ?, ?)
-            RETURNING transfert_id, player_id, club_id, status, transfert_date
-        """;
+                    INSERT INTO transfert (transfert_id, player_id, club_id, status, transfert_date)
+                    VALUES (?, ?, ?, ?, ?)
+                    RETURNING transfert_id, player_id, club_id, status, transfert_date
+                """;
 
         try (Connection connection = dbConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -43,35 +43,11 @@ public class TransfertDAO {
         return null;
     }
 
-    public List<Transfert> findByPlayerId(String playerId) {
-        String sql = """
-            SELECT transfert_id, player_id, club_id, status, transfert_date
-            FROM transfert
-            WHERE player_id = ?::uuid
-        """;
-
-        List<Transfert> transferts = new ArrayList<>();
-        try (Connection connection = dbConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            statement.setObject(1, UUID.fromString(playerId), Types.OTHER);
-
-            try (ResultSet rs = statement.executeQuery()) {
-                while (rs.next()) {
-                    transferts.add(mapToTransfert(rs));
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to find transferts by player ID", e);
-        }
-        return transferts;
-    }
-
     public List<Transfert> findAll() {
         String sql = """
-            SELECT transfert_id, player_id, club_id, status, transfert_date
-            FROM transfert
-        """;
+                    SELECT transfert_id, player_id, club_id, status, transfert_date
+                    FROM transfert
+                """;
 
         List<Transfert> transferts = new ArrayList<>();
         try (Connection connection = dbConnection.getConnection();

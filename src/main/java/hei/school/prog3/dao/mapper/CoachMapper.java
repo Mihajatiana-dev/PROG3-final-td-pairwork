@@ -11,7 +11,7 @@ import java.sql.ResultSet;
 import java.util.function.Function;
 
 @Component
-@RequiredArgsConstructor //when there is attributes insides
+@RequiredArgsConstructor
 
 public class CoachMapper implements Function<ResultSet, Coach> {
     @Override

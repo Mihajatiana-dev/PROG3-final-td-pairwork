@@ -1,9 +1,9 @@
 package hei.school.prog3.api.controller;
 
-import hei.school.prog3.api.dto.request.AddGoal;
-import hei.school.prog3.api.dto.request.UpdateMatchStatus;
-import hei.school.prog3.model.FilterCriteria;
-import hei.school.prog3.model.MatchMinimumInfo;
+import hei.school.prog3.dto.Other.AddGoal;
+import hei.school.prog3.dto.Other.UpdateMatchStatus;
+import hei.school.prog3.dto.Other.FilterCriteria;
+import hei.school.prog3.dto.MatchRest.MatchMinimumInfo;
 import hei.school.prog3.model.enums.MatchStatus;
 import hei.school.prog3.service.MatchService;
 import lombok.RequiredArgsConstructor;

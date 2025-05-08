@@ -1,12 +1,12 @@
 package hei.school.prog3.api.controller;
 
-import hei.school.prog3.api.RestMapper.PlayerRestMapper;
-import hei.school.prog3.model.PlayerToFetch;
-import hei.school.prog3.api.dto.response.PlayerResponse;
-import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
-import hei.school.prog3.model.FilterCriteria;
+import hei.school.prog3.dto.RestMapper.PlayerRestMapper;
+import hei.school.prog3.dto.PlayerRest.PlayerToFetch;
+import hei.school.prog3.dto.PlayerRest.PlayerResponse;
+import hei.school.prog3.dto.PlayerRest.PlayerWithoutClub;
+import hei.school.prog3.dto.Other.FilterCriteria;
 import hei.school.prog3.model.Player;
-import hei.school.prog3.model.PlayerStatistics;
+import hei.school.prog3.dto.PlayerRest.PlayerStatistics;
 import hei.school.prog3.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -1,11 +1,11 @@
 package hei.school.prog3.service;
 
-import hei.school.prog3.api.RestMapper.PlayerRestMapper;
+import hei.school.prog3.dto.RestMapper.PlayerRestMapper;
 import hei.school.prog3.dao.operations.PlayerDAO;
-import hei.school.prog3.model.FilterCriteria;
+import hei.school.prog3.dto.Other.FilterCriteria;
 import hei.school.prog3.model.Player;
-import hei.school.prog3.model.PlayerStatistics;
-import hei.school.prog3.model.PlayerToFetch;
+import hei.school.prog3.dto.PlayerRest.PlayerStatistics;
+import hei.school.prog3.dto.PlayerRest.PlayerToFetch;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

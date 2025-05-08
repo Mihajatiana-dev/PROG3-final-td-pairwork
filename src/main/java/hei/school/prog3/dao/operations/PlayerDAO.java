@@ -2,7 +2,8 @@ package hei.school.prog3.dao.operations;
 
 import hei.school.prog3.config.DbConnection;
 import hei.school.prog3.dao.mapper.PlayerMapper;
-import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
+import hei.school.prog3.dto.Other.FilterCriteria;
+import hei.school.prog3.dto.PlayerRest.PlayerStatistics;
 import hei.school.prog3.model.*;
 import hei.school.prog3.model.enums.DurationUnit;
 import hei.school.prog3.model.enums.PlayerPosition;

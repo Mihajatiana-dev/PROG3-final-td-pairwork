@@ -1,7 +1,5 @@
 package hei.school.prog3.dao.operations;
 
-import hei.school.prog3.api.dto.request.ClubSimpleRequest;
-import hei.school.prog3.api.dto.request.CoachSimpleRequest;
 import hei.school.prog3.config.DbConnection;
 import hei.school.prog3.dao.mapper.ClubMapper;
 import hei.school.prog3.model.Club;

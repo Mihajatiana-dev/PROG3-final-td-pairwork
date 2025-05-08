@@ -1,11 +1,13 @@
 package hei.school.prog3.service;
 
-import hei.school.prog3.api.RestMapper.ClubRestMapper;
-import hei.school.prog3.api.RestMapper.PlayerRestMapper;
-import hei.school.prog3.api.dto.request.ClubSimpleRequest;
-import hei.school.prog3.api.dto.request.CoachSimpleRequest;
-import hei.school.prog3.api.dto.response.ClubResponse;
-import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
+import hei.school.prog3.dto.ClubRest.ClubStatistics;
+import hei.school.prog3.dto.ClubRest.ClubToFetch;
+import hei.school.prog3.dto.MatchRest.MatchMinimumInfo;
+import hei.school.prog3.dto.Other.FilterCriteria;
+import hei.school.prog3.dto.PlayerRest.Scorer;
+import hei.school.prog3.dto.RestMapper.ClubRestMapper;
+import hei.school.prog3.dto.ClubRest.ClubSimpleRequest;
+import hei.school.prog3.dto.CoachRest.CoachSimpleRequest;
 import hei.school.prog3.dao.operations.ClubDAO;
 import hei.school.prog3.dao.operations.GoalDAO;
 import hei.school.prog3.dao.operations.PlayerDAO;
@@ -18,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

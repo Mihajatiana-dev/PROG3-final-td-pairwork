@@ -1,7 +1,11 @@
 package hei.school.prog3.service;
 
-import hei.school.prog3.api.RestMapper.MatchConverter;
-import hei.school.prog3.api.dto.request.AddGoal;
+import hei.school.prog3.dto.MatchRest.MatchMinimumInfo;
+import hei.school.prog3.dto.Other.FilterCriteria;
+import hei.school.prog3.dto.PlayerRest.PlayerMinimumInfo;
+import hei.school.prog3.dto.PlayerRest.Scorer;
+import hei.school.prog3.dto.RestMapper.MatchConverter;
+import hei.school.prog3.dto.Other.AddGoal;
 import hei.school.prog3.dao.operations.GoalDAO;
 import hei.school.prog3.dao.operations.MatchDAO;
 import hei.school.prog3.dao.operations.PlayerDAO;

@@ -1,5 +1,6 @@
 package hei.school.prog3.model;
 
+import hei.school.prog3.dto.PlayerRest.Scorer;
 import hei.school.prog3.model.enums.MatchStatus;
 import lombok.*;
 

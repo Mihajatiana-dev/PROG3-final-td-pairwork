@@ -1,6 +1,6 @@
 package hei.school.prog3.service;
 
-import hei.school.prog3.api.dto.request.CreateSeason;
+import hei.school.prog3.dto.SeasonRest.CreateSeason;
 import hei.school.prog3.dao.operations.SeasonDAO;
 import hei.school.prog3.model.Season;
 import hei.school.prog3.model.enums.SeasonStatus;

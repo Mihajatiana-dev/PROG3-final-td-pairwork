@@ -1,27 +1,17 @@
 package hei.school.prog3.api.controller;
 
-import hei.school.prog3.api.RestMapper.PlayerRestMapper;
-import hei.school.prog3.api.dto.request.CreateSeason;
-import hei.school.prog3.api.dto.request.UpdateSeasonStatus;
-import hei.school.prog3.api.dto.response.PlayerResponse;
-import hei.school.prog3.api.dto.rest.playerRest.PlayerWithoutClub;
+import hei.school.prog3.dto.SeasonRest.CreateSeason;
+import hei.school.prog3.dto.Other.UpdateSeasonStatus;
 import hei.school.prog3.exception.BadRequestException;
 import hei.school.prog3.exception.NotFoundException;
-import hei.school.prog3.model.FilterCriteria;
-import hei.school.prog3.model.Player;
-import hei.school.prog3.model.PlayerStatistics;
 import hei.school.prog3.model.Season;
-import hei.school.prog3.model.enums.SeasonStatus;
-import hei.school.prog3.service.PlayerService;
 import hei.school.prog3.service.SeasonService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor

@@ -12,7 +12,7 @@ import java.sql.ResultSet;
 import java.util.function.Function;
 
 @Component
-@RequiredArgsConstructor //when there is attributes insides
+@RequiredArgsConstructor
 
 public class ClubMapper implements Function<ResultSet, Club> {
     private final CoachDAO coachDAO;
@@ -34,6 +34,6 @@ public class ClubMapper implements Function<ResultSet, Club> {
         club.setStadium(resultSet.getString("stadium"));
         club.setCoach(coach);
 
-        return  club;
+        return club;
     }
 }

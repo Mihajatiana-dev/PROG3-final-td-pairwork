@@ -98,27 +98,4 @@ public class CoachDAO implements GenericOperations<Coach> {
         }
         return null;
     }
-
-    public Coach findCoachById(String coachId) {
-        String sql = "SELECT coach_name, nationality FROM coach WHERE coach_id = ?";
-
-        try (Connection connection = dbConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            statement.setObject(1, UUID.fromString(coachId), Types.OTHER);
-
-            try (ResultSet rs = statement.executeQuery()) {
-                if (rs.next()) {
-                    return new Coach(
-                            coachId,
-                            rs.getString("coach_name"),
-                            rs.getString("nationality")
-                    );
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to fetch coach", e);
-        }
-        return null;
-    }
 }

@@ -1,6 +1,6 @@
 package hei.school.prog3.dao.operations;
 
-import hei.school.prog3.api.dto.request.CreateSeason;
+import hei.school.prog3.dto.SeasonRest.CreateSeason;
 import hei.school.prog3.config.DbConnection;
 import hei.school.prog3.exception.BadRequestException;
 import hei.school.prog3.exception.NotFoundException;

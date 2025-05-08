@@ -21,12 +21,10 @@ public class DbConnection {
     }
 
     public Connection getConnection() {
-        try{
+        try {
             return DriverManager.getConnection(url, user, password);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 }
-
-// variables d'environnement: dbHost=localhost;dbName=final_td_pairwork;dbPassword=2002;dbUrl=jdbc:postgresql://localhost:5432/final_td_pairwork;dbUsername=mihajatiana
