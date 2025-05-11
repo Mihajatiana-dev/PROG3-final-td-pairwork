@@ -105,7 +105,7 @@ public class ClubDAO implements GenericOperations<Club> {
         String upsertClubSql = """
                 INSERT INTO club (club_id, club_name, acronym, year_creation, stadium, coach_id)
                 VALUES (?, ?, ?, ?, ?, ?)
-                ON CONFLICT (club_id) 
+                ON CONFLICT (club_id)
                 DO UPDATE SET 
                     club_name = EXCLUDED.club_name,
                     acronym = EXCLUDED.acronym,
@@ -431,7 +431,7 @@ public class ClubDAO implements GenericOperations<Club> {
     public List<Integer> getAllClubsDifferenceGoals() {
         String sql = """
                 SELECT c.club_id,
-                       SUM(CASE 
+                       SUM(CASE
                            WHEN m.home_club_id = c.club_id THEN ms.home_score
                            WHEN m.away_club_id = c.club_id THEN ms.away_score
                            ELSE 0
