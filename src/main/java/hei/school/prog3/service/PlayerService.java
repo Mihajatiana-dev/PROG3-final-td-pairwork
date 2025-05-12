@@ -29,7 +29,10 @@ public class PlayerService {
     }
 
     public PlayerStatistics getPlayerStatistics(UUID playerId, int seasonYear) {
-        return playerDAO.getPlayerStatistics(playerId, seasonYear);
+        PlayerStatistics statistics = new PlayerStatistics();
+        statistics.setScoredGoals(playerDAO.getScoredGoals(playerId, seasonYear));
+        statistics.setPlayingTime(playerDAO.getPlayingTime(playerId, seasonYear));
+        return statistics;
     }
 
     public List<PlayerToFetch> getAllPlayersWithStats() {

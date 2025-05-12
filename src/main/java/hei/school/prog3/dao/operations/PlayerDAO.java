@@ -239,15 +239,7 @@ public class PlayerDAO implements GenericOperations<Player> {
         return savedPlayers;
     }
 
-
-    public PlayerStatistics getPlayerStatistics(UUID playerId, int seasonYear) {
-        PlayerStatistics statistics = new PlayerStatistics();
-        statistics.setScoredGoals(getScoredGoals(playerId, seasonYear));
-        statistics.setPlayingTime(getPlayingTime(playerId, seasonYear));
-        return statistics;
-    }
-
-    private Integer getScoredGoals(UUID playerId, int seasonYear) {
+    public Integer getScoredGoals(UUID playerId, int seasonYear) {
         String sql = """
                 SELECT COUNT(*)
                 FROM goal g
@@ -275,7 +267,7 @@ public class PlayerDAO implements GenericOperations<Player> {
         return 0;
     }
 
-    private PlayingTime getPlayingTime(UUID playerId, int seasonYear) {
+    public PlayingTime getPlayingTime(UUID playerId, int seasonYear) {
         String sql = """
                 SELECT value, duration_unit
                 FROM playing_time pt
